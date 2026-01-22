@@ -36,6 +36,8 @@ export interface AnalysisResult {
 export interface CompanyProfile {
   websiteUrl: string;
   companyName: string;
+  userName: string;
+  feedbackStyle: 'direct' | 'supportive';
   productFeatures: string[];
   valueProps: string[];
   differentiators: string[];
