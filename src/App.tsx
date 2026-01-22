@@ -3,7 +3,7 @@ import {
   Globe, MessageSquare, FileText, ChevronDown, ChevronUp, AlertTriangle,
   CheckCircle, Target, TrendingUp, Users, Clock, Zap, BarChart3, Send,
   Copy, Link, History, Trash2, X, Upload, Check, Info,
-  Share2, FileDown, Sparkles, Mail, Building2, Search, ArrowRight,
+  Share2, FileDown, Sparkles, Mail, Building2, ArrowRight,
   Calendar, Eye, Settings, ArrowLeft, User
 } from 'lucide-react';
 import { analyzeDemo } from './services/claudeApi';
@@ -12,7 +12,7 @@ import { useAnalysisHistory, type HistoryEntry } from './hooks/useAnalysisHistor
 import { useCompanyProfile } from './hooks/useCompanyProfile';
 import { copyToClipboard, downloadPDF, generateShareableLink } from './utils/export';
 import { SAMPLE_TRANSCRIPT, SAMPLE_PROSPECT_URL, SAMPLE_SDR_TRANSCRIPT, BENCHMARKS } from './constants/sampleData';
-import type { AnalysisResult, CompanyProfile, HubSpotExportOptions, ShareEmailOptions } from './types/analysis';
+import type { AnalysisResult, HubSpotExportOptions, ShareEmailOptions } from './types/analysis';
 
 type FeedbackStyle = 'direct' | 'supportive';
 type AppScreen = 'setup' | 'style' | 'main' | 'settings';
@@ -22,16 +22,6 @@ const LOADING_STAGES = [
   'Analyzing discovery quality...',
   'Evaluating demo structure...',
   'Generating coaching feedback...'
-];
-
-// Default Salesfire differentiators
-const DEFAULT_DIFFERENTIATORS = [
-  'Real-time personalisation',
-  'No-code setup',
-  'ROI calculator',
-  'Dedicated CSM',
-  'AI-powered recommendations',
-  'Multi-channel orchestration'
 ];
 
 export default function App() {
@@ -56,13 +46,12 @@ export default function App() {
   const [previousScreen, setPreviousScreen] = useState<AppScreen>('main');
 
   // Setup form state
-  const [setupUrl, setSetupUrl] = useState('');
   const [setupUserName, setSetupUserName] = useState('');
-  const [isScanning, setIsScanning] = useState(false);
+  const [setupCompanyName, setSetupCompanyName] = useState('');
 
   // Settings form state
   const [settingsUserName, setSettingsUserName] = useState('');
-  const [settingsUrl, setSettingsUrl] = useState('');
+  const [settingsCompanyName, setSettingsCompanyName] = useState('');
   const [settingsFeedbackStyle, setSettingsFeedbackStyle] = useState<FeedbackStyle>('direct');
 
   // Modal state
@@ -71,7 +60,6 @@ export default function App() {
   const [hubSpotOptions, setHubSpotOptions] = useState<HubSpotExportOptions>({
     includeStrengths: true,
     includePriorities: true,
-    includeValuePropCoverage: true,
     includeDetailedScores: false,
     includeTranscriptQuotes: false
   });
@@ -79,7 +67,6 @@ export default function App() {
     managerEmail: '',
     note: '',
     includePriorities: true,
-    includeValuePropCoverage: true,
     includeFullAnalysis: false
   });
 
@@ -115,7 +102,7 @@ export default function App() {
     // Pre-populate settings form
     if (profile) {
       setSettingsUserName(profile.userName || '');
-      setSettingsUrl(profile.websiteUrl || '');
+      setSettingsCompanyName(profile.companyName || '');
       setSettingsFeedbackStyle(profile.feedbackStyle || 'direct');
     }
     setAppScreen('settings');
@@ -152,74 +139,22 @@ export default function App() {
     return match ? match[1] : null;
   };
 
-  // Simulate website scanning
-  const scanWebsite = async (url: string, userName: string): Promise<CompanyProfile> => {
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    const companyName = getProspectName(url);
-
-    return {
-      websiteUrl: url,
-      companyName: companyName.charAt(0).toUpperCase() + companyName.slice(1),
-      userName: userName,
-      feedbackStyle: 'direct',
-      productFeatures: [
-        'Overlay campaigns',
-        'Email capture widgets',
-        'Exit-intent popups',
-        'Product recommendations',
-        'Social proof notifications'
-      ],
-      valueProps: [
-        'Increase conversion rates',
-        'Capture more emails',
-        'Reduce cart abandonment',
-        'Boost average order value'
-      ],
-      differentiators: DEFAULT_DIFFERENTIATORS,
-      scannedAt: new Date().toISOString()
-    };
-  };
-
-  // Handle company profile setup
-  const handleScanWebsite = async () => {
+  // Handle profile setup - continue to style selection
+  const handleContinueSetup = () => {
     if (!setupUserName.trim()) {
       setError('Please enter your name');
       return;
     }
-    if (!isValidUrl(setupUrl)) {
-      setError('Please enter a valid website URL');
+    if (!setupCompanyName.trim()) {
+      setError('Please enter your company name');
       return;
     }
 
-    setIsScanning(true);
     setError(null);
-
-    try {
-      const scannedProfile = await scanWebsite(setupUrl, setupUserName);
-      saveProfile(scannedProfile);
-      setAppScreen('style');
-    } catch {
-      setError('Failed to scan website. Please try again.');
-    } finally {
-      setIsScanning(false);
-    }
-  };
-
-  // Skip setup with defaults
-  const handleSkipSetup = () => {
-    if (!setupUserName.trim()) {
-      setError('Please enter your name');
-      return;
-    }
     saveProfile({
-      websiteUrl: '',
-      companyName: 'Salesfire',
-      userName: setupUserName,
-      feedbackStyle: 'direct',
-      productFeatures: [],
-      valueProps: [],
-      differentiators: DEFAULT_DIFFERENTIATORS,
-      scannedAt: new Date().toISOString()
+      companyName: setupCompanyName.trim(),
+      userName: setupUserName.trim(),
+      feedbackStyle: 'direct'
     });
     setAppScreen('style');
   };
@@ -238,11 +173,15 @@ export default function App() {
       setError('Please enter your name');
       return;
     }
+    if (!settingsCompanyName.trim()) {
+      setError('Please enter your company name');
+      return;
+    }
     if (profile) {
       saveProfile({
         ...profile,
-        userName: settingsUserName,
-        websiteUrl: settingsUrl,
+        userName: settingsUserName.trim(),
+        companyName: settingsCompanyName.trim(),
         feedbackStyle: settingsFeedbackStyle
       });
       setFeedbackStyle(settingsFeedbackStyle);
@@ -420,21 +359,6 @@ export default function App() {
         feedbackStyle
       });
 
-      if (profile) {
-        const transcriptLower = demoTranscript.toLowerCase();
-        const mentioned = profile.differentiators.filter(d =>
-          transcriptLower.includes(d.toLowerCase())
-        );
-        const missed = profile.differentiators.filter(d =>
-          !transcriptLower.includes(d.toLowerCase())
-        );
-        result.valuePropCoverage = {
-          mentioned,
-          missed,
-          total: profile.differentiators.length
-        };
-      }
-
       clearInterval(stageInterval);
       setResults(result);
 
@@ -493,15 +417,6 @@ export default function App() {
       text += '\n';
     }
 
-    if (hubSpotOptions.includeValuePropCoverage && results.valuePropCoverage) {
-      const { mentioned, missed, total } = results.valuePropCoverage;
-      text += `📌 VALUE PROP COVERAGE: ${mentioned.length}/${total} differentiators mentioned\n`;
-      if (missed.length > 0) {
-        text += `Missed: ${missed.join(', ')}\n`;
-      }
-      text += '\n';
-    }
-
     if (hubSpotOptions.includeDetailedScores) {
       text += `📈 CATEGORY SCORES:\n`;
       results.categories.forEach(cat => {
@@ -555,14 +470,6 @@ export default function App() {
       getTop3Priorities(results).forEach((p, i) => {
         emailBody += `${i + 1}. ${p.tip}\n`;
       });
-      emailBody += '\n';
-    }
-
-    if (shareOptions.includeValuePropCoverage && results.valuePropCoverage) {
-      emailBody += `Value Prop Coverage: ${results.valuePropCoverage.mentioned.length}/${results.valuePropCoverage.total}\n`;
-      if (results.valuePropCoverage.missed.length > 0) {
-        emailBody += `Missed: ${results.valuePropCoverage.missed.join(', ')}\n`;
-      }
       emailBody += '\n';
     }
 
@@ -707,7 +614,7 @@ export default function App() {
     );
   }
 
-  // Company Profile Setup Screen
+  // Profile Setup Screen
   if (appScreen === 'setup') {
     return (
       <div className="min-h-screen bg-gray-950">
@@ -744,36 +651,18 @@ export default function App() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Your Company Website URL
+                    Company Name <span className="text-red-400">*</span>
                   </label>
                   <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <input
-                      type="url"
-                      value={setupUrl}
-                      onChange={(e) => setSetupUrl(e.target.value)}
-                      placeholder="https://www.yourcompany.com"
+                      type="text"
+                      value={setupCompanyName}
+                      onChange={(e) => setSetupCompanyName(e.target.value)}
+                      placeholder="Enter your company name"
                       className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     />
                   </div>
-                </div>
-
-                <div className="bg-gray-800/50 rounded-lg p-4">
-                  <p className="text-sm text-gray-400 mb-3">We'll scan your site to identify:</p>
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-2 text-sm text-gray-300">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      Key product features
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-300">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      Value propositions
-                    </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-300">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      Differentiators
-                    </li>
-                  </ul>
                 </div>
 
                 {error && (
@@ -784,29 +673,12 @@ export default function App() {
                 )}
 
                 <button
-                  onClick={handleScanWebsite}
-                  disabled={!setupUserName.trim() || !setupUrl.trim() || isScanning}
+                  onClick={handleContinueSetup}
+                  disabled={!setupUserName.trim() || !setupCompanyName.trim()}
                   className="w-full py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {isScanning ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Scanning...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="w-5 h-5" />
-                      Scan My Website
-                    </>
-                  )}
-                </button>
-
-                <button
-                  onClick={handleSkipSetup}
-                  disabled={!setupUserName.trim()}
-                  className="w-full py-2 text-gray-400 hover:text-white text-sm transition-colors disabled:opacity-50"
-                >
-                  Skip website scan
+                  Continue
+                  <ArrowRight className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -936,15 +808,15 @@ export default function App() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Company Website URL
+                  Company Name
                 </label>
                 <div className="relative">
-                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                   <input
-                    type="url"
-                    value={settingsUrl}
-                    onChange={(e) => setSettingsUrl(e.target.value)}
-                    placeholder="https://www.yourcompany.com"
+                    type="text"
+                    value={settingsCompanyName}
+                    onChange={(e) => setSettingsCompanyName(e.target.value)}
+                    placeholder="Enter your company name"
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
                 </div>
@@ -1050,7 +922,6 @@ export default function App() {
                 {[
                   { key: 'includeStrengths', label: 'Strengths' },
                   { key: 'includePriorities', label: 'Priorities' },
-                  { key: 'includeValuePropCoverage', label: 'Value prop coverage' },
                   { key: 'includeDetailedScores', label: 'Detailed scores' },
                   { key: 'includeTranscriptQuotes', label: 'Full transcript quotes' },
                 ].map(({ key, label }) => (
@@ -1119,7 +990,6 @@ export default function App() {
               <div className="space-y-3">
                 {[
                   { key: 'includePriorities', label: 'Include my priorities for next demo' },
-                  { key: 'includeValuePropCoverage', label: 'Include value prop coverage' },
                   { key: 'includeFullAnalysis', label: 'Include full detailed analysis' },
                 ].map(({ key, label }) => (
                   <label key={key} className="flex items-center gap-3 cursor-pointer">
@@ -1399,35 +1269,6 @@ export default function App() {
                 </div>
               </div>
             </div>
-
-            {/* Value Prop Coverage */}
-            {results.valuePropCoverage && (
-              <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <CheckCircle className="w-5 h-5 text-purple-500" />
-                  <h2 className="text-lg font-semibold text-white">Value Prop Coverage</h2>
-                  <span className="ml-auto text-lg font-bold text-purple-400">{results.valuePropCoverage.mentioned.length}/{results.valuePropCoverage.total}</span>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase mb-2">Mentioned</p>
-                    <div className="space-y-1">
-                      {results.valuePropCoverage.mentioned.length > 0 ? results.valuePropCoverage.mentioned.map((item, i) => (
-                        <div key={i} className="flex items-center gap-2 text-sm text-green-400"><Check className="w-4 h-4" />{item}</div>
-                      )) : <p className="text-sm text-gray-500">None detected</p>}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase mb-2">Missed</p>
-                    <div className="space-y-1">
-                      {results.valuePropCoverage.missed.map((item, i) => (
-                        <div key={i} className="flex items-center gap-2 text-sm text-gray-400"><X className="w-4 h-4" />{item}</div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* 3 Priorities */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
