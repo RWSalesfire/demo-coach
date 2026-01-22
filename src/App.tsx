@@ -2,12 +2,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Globe, MessageSquare, FileText, ChevronDown, ChevronUp, AlertTriangle,
   CheckCircle, Target, TrendingUp, Users, Clock, Zap, BarChart3, Send,
-  Download, Copy, Link, History, Trash2, X, Upload, Check, Info, HelpCircle
+  Copy, Link, History, Trash2, X, Upload, Check, Info, HelpCircle,
+  Share2, FileDown, Sparkles
 } from 'lucide-react';
 import { analyzeDemo } from './services/claudeApi';
 import { Toast, useToast } from './components/Toast';
 import { useAnalysisHistory, type HistoryEntry } from './hooks/useAnalysisHistory';
-import { copyToClipboard, generateResultsSummary, downloadPDF, generateShareableLink } from './utils/export';
+import { copyToClipboard, downloadPDF, generateShareableLink } from './utils/export';
 import { SAMPLE_TRANSCRIPT, SAMPLE_PROSPECT_URL, SAMPLE_SDR_TRANSCRIPT, BENCHMARKS } from './constants/sampleData';
 import type { AnalysisResult } from './types/analysis';
 
@@ -31,12 +32,12 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Record<number, boolean>>({});
   const [activeTab, setActiveTab] = useState<'input' | 'results'>('input');
-  const [showExportMenu, setShowExportMenu] = useState(false);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [currentHistoryId, setCurrentHistoryId] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
   const [activeNavSection, setActiveNavSection] = useState<number>(0);
+  const [showScoreBreakdown, setShowScoreBreakdown] = useState(false);
   const categoryRefs = useRef<(HTMLDivElement | null)[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -68,6 +69,45 @@ export default function App() {
   const parseTimestamp = (text: string): string | null => {
     const match = text.match(/(\d{2}:\d{2}:\d{2}(?:\.\d{3})?)/);
     return match ? match[1] : null;
+  };
+
+  // Generate quick win summary from results
+  const generateQuickWinSummary = (results: AnalysisResult): string => {
+    const strongCategories = results.categories.filter(c => c.score >= 7);
+    const weakCategories = results.categories.filter(c => c.score < 5);
+
+    let summary = '';
+
+    if (strongCategories.length > 0) {
+      const topStrength = strongCategories.sort((a, b) => b.score - a.score)[0];
+      summary += `You nailed ${topStrength.name.toLowerCase()}`;
+      if (strongCategories.length > 1) {
+        summary += ` and ${strongCategories[1].name.toLowerCase()}`;
+      }
+      summary += '. ';
+    }
+
+    if (weakCategories.length > 0) {
+      const topWeakness = weakCategories.sort((a, b) => a.score - b.score)[0];
+      summary += `Focus on ${topWeakness.name.toLowerCase()} next time.`;
+    } else if (results.priorityImprovements.length > 0) {
+      summary += `Keep pushing on ${results.priorityImprovements[0].split(' ').slice(0, 3).join(' ').toLowerCase()}.`;
+    }
+
+    return summary || 'Good effort! Review the detailed feedback below.';
+  };
+
+  // Get top 3 priorities from categories
+  const getTop3Priorities = (results: AnalysisResult) => {
+    return results.categories
+      .filter(c => c.nextDemo)
+      .sort((a, b) => a.score - b.score)
+      .slice(0, 3)
+      .map(c => ({
+        category: c.name,
+        tip: c.nextDemo,
+        score: c.score
+      }));
   };
 
   const toggleSection = (section: number) => {
@@ -123,9 +163,9 @@ export default function App() {
     setIsAnalyzing(true);
     setLoadingStage(0);
     setError(null);
+    setShowScoreBreakdown(false);
     abortControllerRef.current = new AbortController();
 
-    // Simulate loading stages
     const stageInterval = setInterval(() => {
       setLoadingStage(prev => {
         if (prev < LOADING_STAGES.length - 1) return prev + 1;
@@ -144,7 +184,6 @@ export default function App() {
       clearInterval(stageInterval);
       setResults(result);
 
-      // Add to history
       const historyId = addToHistory(result, prospectUrl, demoTranscript, sdrTranscript, feedbackStyle);
       setCurrentHistoryId(historyId);
 
@@ -170,40 +209,53 @@ export default function App() {
     setCurrentHistoryId(entry.id);
     setActiveTab('results');
     setShowHistoryPanel(false);
+    setShowScoreBreakdown(false);
   };
 
   // Export functions
-  const handleCopyResults = async () => {
+  const handleCopyForHubSpot = async () => {
     if (!results) return;
-    const summary = generateResultsSummary(results, getProspectName(prospectUrl));
-    const success = await copyToClipboard(summary);
-    if (success) {
-      showToast('Results copied to clipboard!');
-    }
-    setShowExportMenu(false);
+    const priorities = getTop3Priorities(results);
+    const hubspotText = `Demo Analysis - ${getProspectName(prospectUrl)}
+Score: ${results.overallScore.toFixed(1)}/10
+
+Top 3 Priorities:
+${priorities.map((p, i) => `${i + 1}. ${p.category}: ${p.tip}`).join('\n')}
+
+Key Strengths: ${results.keyStrengths.slice(0, 2).join(', ')}`;
+
+    const success = await copyToClipboard(hubspotText);
+    if (success) showToast('Copied for HubSpot!');
   };
 
-  const handleCopyLink = async () => {
-    if (!currentHistoryId) return;
-    const link = generateShareableLink(currentHistoryId);
-    const success = await copyToClipboard(link);
-    if (success) {
-      showToast('Link copied to clipboard!');
-    }
-    setShowExportMenu(false);
+  const handleShareWithManager = async () => {
+    if (!results || !currentHistoryId) return;
+    const summary = `Demo Analysis for ${getProspectName(prospectUrl)}
+
+Overall Score: ${results.overallScore.toFixed(1)}/10 (Team avg: ${BENCHMARKS.teamAverage})
+
+Quick Summary: ${generateQuickWinSummary(results)}
+
+${generateShareableLink(currentHistoryId)}`;
+
+    const success = await copyToClipboard(summary);
+    if (success) showToast('Summary copied for sharing!');
   };
 
   const handleDownloadPDF = () => {
     if (!results) return;
     downloadPDF(results, getProspectName(prospectUrl));
-    setShowExportMenu(false);
   };
 
   const handleCopyTip = async (tip: string) => {
     const success = await copyToClipboard(tip);
-    if (success) {
-      showToast('Copied!');
-    }
+    if (success) showToast('Copied!');
+  };
+
+  const handleAddToHubSpot = async (category: string, tip: string) => {
+    const text = `[${category}] ${tip}`;
+    const success = await copyToClipboard(text);
+    if (success) showToast('Copied for HubSpot!');
   };
 
   // Scroll spy for navigation
@@ -277,7 +329,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
+    <div className="min-h-screen bg-gray-950 text-gray-100 pb-24">
       {/* Toast Notification */}
       <Toast message={toast.message} isVisible={toast.isVisible} onClose={hideToast} />
 
@@ -365,10 +417,7 @@ export default function App() {
               <h3 className="font-semibold text-white">Analysis History</h3>
               <div className="flex items-center gap-2">
                 {history.length > 0 && (
-                  <button
-                    onClick={clearHistory}
-                    className="text-xs text-red-400 hover:text-red-300"
-                  >
+                  <button onClick={clearHistory} className="text-xs text-red-400 hover:text-red-300">
                     Clear All
                   </button>
                 )}
@@ -400,10 +449,7 @@ export default function App() {
                           {entry.overallScore.toFixed(1)}
                         </span>
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteEntry(entry.id);
-                          }}
+                          onClick={(e) => { e.stopPropagation(); deleteEntry(entry.id); }}
                           className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-400 transition-all"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -581,7 +627,6 @@ Example format:
               )}
             </button>
 
-            {/* Cancel Button */}
             {isAnalyzing && (
               <button
                 onClick={cancelAnalysis}
@@ -595,134 +640,171 @@ Example format:
 
         {activeTab === 'results' && results && (
           <div className="space-y-6">
-            {/* Export Button */}
-            <div className="flex justify-end relative">
-              <button
-                onClick={() => setShowExportMenu(!showExportMenu)}
-                className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-lg hover:from-orange-600 hover:to-red-700 transition-all flex items-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Export
-              </button>
-              {showExportMenu && (
-                <div className="absolute right-0 top-12 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-20 overflow-hidden">
-                  <button
-                    onClick={handleDownloadPDF}
-                    className="w-full px-4 py-3 text-left text-sm text-gray-200 hover:bg-gray-700 flex items-center gap-2"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download as PDF
-                  </button>
-                  <button
-                    onClick={handleCopyLink}
-                    className="w-full px-4 py-3 text-left text-sm text-gray-200 hover:bg-gray-700 flex items-center gap-2"
-                  >
-                    <Link className="w-4 h-4" />
-                    Copy shareable link
-                  </button>
-                  <button
-                    onClick={handleCopyResults}
-                    className="w-full px-4 py-3 text-left text-sm text-gray-200 hover:bg-gray-700 flex items-center gap-2"
-                  >
-                    <Copy className="w-4 h-4" />
-                    Copy to clipboard
-                  </button>
+            {/* 1. QUICK WIN SUMMARY */}
+            <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/30 rounded-xl p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-6 h-6 text-white" />
                 </div>
-              )}
-            </div>
-
-            {/* Overall Score */}
-            <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-white mb-1">Overall Demo Score</h2>
-                  <p className="text-sm text-gray-400">Based on Salesfire demo best practices</p>
-                  {/* Benchmark Context */}
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-lg font-semibold text-white">Quick Summary</h2>
+                    <div className={`text-3xl font-bold ${getScoreColor(results.overallScore)}`}>
+                      {results.overallScore.toFixed(1)}<span className="text-lg text-gray-500">/10</span>
+                    </div>
+                  </div>
+                  <p className="text-gray-200 text-lg">
+                    {generateQuickWinSummary(results)}
+                  </p>
                   <p className="text-xs text-gray-500 mt-2">
-                    Team average: <span className="text-gray-400">{BENCHMARKS.teamAverage}</span>
-                    {' | '}
-                    Top performers: <span className="text-green-400">{BENCHMARKS.topPerformers}+</span>
+                    Team average: {BENCHMARKS.teamAverage} | Top performers: {BENCHMARKS.topPerformers}+
                   </p>
                 </div>
-                <div className={`text-5xl font-bold ${getScoreColor(results.overallScore)}`}>
-                  {results.overallScore.toFixed(1)}
-                  <span className="text-2xl text-gray-500">/10</span>
-                </div>
               </div>
+            </div>
 
-              {/* Score bars */}
-              <div className="mt-6 grid grid-cols-7 gap-2">
-                {results.categories.map((cat, idx) => (
-                  <div key={idx} className="text-center">
-                    <div className="h-24 bg-gray-800 rounded-lg relative overflow-hidden">
-                      <div
-                        className={`absolute bottom-0 left-0 right-0 transition-all ${getScoreBarColor(cat.score)}`}
-                        style={{ height: `${cat.score * 10}%` }}
-                      />
+            {/* 2. YOUR 3 PRIORITIES FOR NEXT DEMO */}
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="w-5 h-5 text-orange-500" />
+                <h2 className="text-lg font-semibold text-white">Your 3 Priorities for Next Demo</h2>
+              </div>
+              <div className="space-y-4">
+                {getTop3Priorities(results).map((priority, idx) => (
+                  <div key={idx} className="bg-gray-800 rounded-lg p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3 flex-1">
+                        <span className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                          {idx + 1}
+                        </span>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium text-white">{priority.category}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${getScoreLabel(priority.score).color}`}>
+                              {priority.score}/10
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-300">{priority.tip}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-1 flex-shrink-0">
+                        <button
+                          onClick={() => handleCopyTip(priority.tip)}
+                          className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+                          title="Copy"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleAddToHubSpot(priority.category, priority.tip)}
+                          className="p-2 text-gray-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-lg transition-colors"
+                          title="Copy for HubSpot"
+                        >
+                          <Link className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-400 mt-2 truncate" title={cat.name}>
-                      {cat.name.split(' ')[0]}
-                    </p>
-                    <p className={`text-sm font-semibold ${getScoreColor(cat.score)}`}>{cat.score}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Key Insights */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                  <h3 className="font-semibold text-white">Key Strengths</h3>
+            {/* 3. SCORE BREAKDOWN (Collapsed by default) */}
+            <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
+              <button
+                onClick={() => setShowScoreBreakdown(!showScoreBreakdown)}
+                className="w-full p-4 flex items-center justify-between hover:bg-gray-800/50 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-gray-400" />
+                  <span className="font-medium text-white">See detailed scores</span>
                 </div>
-                <ul className="space-y-2">
-                  {results.keyStrengths.map((strength, idx) => (
-                    <li key={idx} className="text-sm text-gray-300 flex items-start gap-2">
-                      <span className="text-green-500 mt-1">•</span>
-                      {strength}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <Target className="w-5 h-5 text-orange-500" />
-                  <h3 className="font-semibold text-white">Priority Improvements</h3>
+                {showScoreBreakdown ? (
+                  <ChevronUp className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+
+              {showScoreBreakdown && (
+                <div className="p-6 pt-0 border-t border-gray-800">
+                  {/* Score bars */}
+                  <div className="grid grid-cols-7 gap-2 mt-4">
+                    {results.categories.map((cat, idx) => (
+                      <div key={idx} className="text-center">
+                        <div className="h-24 bg-gray-800 rounded-lg relative overflow-hidden">
+                          <div
+                            className={`absolute bottom-0 left-0 right-0 transition-all ${getScoreBarColor(cat.score)}`}
+                            style={{ height: `${cat.score * 10}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-gray-400 mt-2 truncate" title={cat.name}>
+                          {cat.name.split(' ')[0]}
+                        </p>
+                        <p className={`text-sm font-semibold ${getScoreColor(cat.score)}`}>{cat.score}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Key Insights */}
+                  <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div className="bg-gray-800 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <h3 className="font-medium text-white text-sm">Key Strengths</h3>
+                      </div>
+                      <ul className="space-y-1">
+                        {results.keyStrengths.slice(0, 3).map((s, i) => (
+                          <li key={i} className="text-xs text-gray-300 flex items-start gap-1">
+                            <span className="text-green-500">•</span>
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="bg-gray-800 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className="w-4 h-4 text-orange-500" />
+                        <h3 className="font-medium text-white text-sm">Areas to Improve</h3>
+                      </div>
+                      <ul className="space-y-1">
+                        {results.priorityImprovements.slice(0, 3).map((s, i) => (
+                          <li key={i} className="text-xs text-gray-300 flex items-start gap-1">
+                            <span className="text-orange-500">{i + 1}.</span>
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
                 </div>
-                <ul className="space-y-2">
-                  {results.priorityImprovements.map((improvement, idx) => (
-                    <li key={idx} className="text-sm text-gray-300 flex items-start gap-2">
-                      <span className="text-orange-500 mt-1">{idx + 1}.</span>
-                      {improvement}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              )}
             </div>
 
-            {/* Sticky Navigation */}
-            <div className="sticky top-0 z-10 bg-gray-950 py-3 border-b border-gray-800 -mx-6 px-6">
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {results.categories.map((cat, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => scrollToCategory(idx)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                      activeNavSection === idx
-                        ? 'bg-orange-500 text-white'
-                        : 'bg-gray-800 text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    {cat.name.split(' ')[0]}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Detailed Categories */}
+            {/* 4. DETAILED ANALYSIS */}
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-white">Detailed Analysis</h3>
+              {/* Sticky Navigation */}
+              <div className="sticky top-0 z-10 bg-gray-950 py-3 -mx-6 px-6">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-white">Detailed Analysis</h3>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {results.categories.map((cat, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => scrollToCategory(idx)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                        activeNavSection === idx
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-gray-800 text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {cat.name.split(' ')[0]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {results.categories.map((category, idx) => (
                 <div
                   key={idx}
@@ -761,7 +843,6 @@ Example format:
 
                   {expandedSections[idx] && (
                     <div className="px-4 pb-4 space-y-4 border-t border-gray-800 pt-4">
-                      {/* Quotes & Feedback */}
                       {category.quotes && category.quotes.map((quote, qIdx) => {
                         const timestamp = parseTimestamp(quote.transcript);
                         return (
@@ -785,7 +866,6 @@ Example format:
                         );
                       })}
 
-                      {/* Objections (if present) */}
                       {category.objections && category.objections.length > 0 && (
                         <div className="space-y-3">
                           <h5 className="text-sm font-medium text-gray-400 uppercase">Objections Identified</h5>
@@ -809,7 +889,6 @@ Example format:
                         </div>
                       )}
 
-                      {/* Next Demo Tip */}
                       {category.nextDemo && (
                         <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4 relative">
                           <button
@@ -832,7 +911,7 @@ Example format:
               ))}
             </div>
 
-            {/* Back to Input Button */}
+            {/* Analyze Another Demo Button */}
             <button
               onClick={() => setActiveTab('input')}
               className="w-full py-3 bg-gray-800 text-gray-300 font-medium rounded-xl hover:bg-gray-700 transition-all"
@@ -842,6 +921,35 @@ Example format:
           </div>
         )}
       </div>
+
+      {/* 5. STICKY EXPORT FOOTER */}
+      {activeTab === 'results' && results && (
+        <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 p-4 z-30">
+          <div className="max-w-6xl mx-auto flex items-center justify-center gap-3">
+            <button
+              onClick={handleCopyForHubSpot}
+              className="px-4 py-2.5 bg-gray-800 text-gray-200 font-medium rounded-lg hover:bg-gray-700 transition-all flex items-center gap-2"
+            >
+              <Copy className="w-4 h-4" />
+              Copy for HubSpot
+            </button>
+            <button
+              onClick={handleShareWithManager}
+              className="px-4 py-2.5 bg-gray-800 text-gray-200 font-medium rounded-lg hover:bg-gray-700 transition-all flex items-center gap-2"
+            >
+              <Share2 className="w-4 h-4" />
+              Share with Manager
+            </button>
+            <button
+              onClick={handleDownloadPDF}
+              className="px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-lg hover:from-orange-600 hover:to-red-700 transition-all flex items-center gap-2"
+            >
+              <FileDown className="w-4 h-4" />
+              Save PDF
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
