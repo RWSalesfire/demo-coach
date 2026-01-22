@@ -1,8 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --color-gray-950: #0a0a0f;
-  --color-gray-750: #2d3748;
+  /* Salesfire brand colors */
+  --color-sf-dark: #16162a;
+  --color-sf-card: #1e1e38;
+  --color-sf-input: #252542;
+  --color-sf-border: #2d2d4a;
+  --color-sf-border-light: #3d3d5c;
+  --color-sf-muted: #a0a0c0;
+  --color-sf-muted-dark: #8080a0;
+  --color-sf-green: #5ee6a0;
+  --color-sf-green-dark: #4ade80;
+  --color-sf-purple: #a855f7;
+  --color-sf-pink: #ec4899;
+
+  /* Keep for history panel hover */
+  --color-sf-hover: #2a2a48;
 }
 
 :root {
@@ -19,7 +32,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #0a0a0f;
+  background-color: #16162a;
 }
 
 /* Custom scrollbar for dark theme */
@@ -29,14 +42,14 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1f2937;
+  background: #1e1e38;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: #3d3d5c;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: #4d4d6c;
 }

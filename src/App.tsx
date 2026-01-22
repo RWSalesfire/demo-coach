@@ -576,26 +576,26 @@ export default function App() {
 
   // Shared Header Component
   const Header = () => (
-    <div className="bg-gray-900 border-b border-gray-800 px-6 py-4">
+    <div className="bg-sf-card border-b border-sf-border px-6 py-4">
       <div className="flex items-center justify-between max-w-6xl mx-auto">
         <button
           onClick={goToInput}
           className="flex items-center gap-3 hover:opacity-80 transition-opacity"
         >
-          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
-            <Zap className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 bg-sf-green rounded-lg flex items-center justify-center">
+            <Zap className="w-6 h-6 text-sf-dark" />
           </div>
           <span className="text-xl font-bold text-white">Demo Coach</span>
         </button>
         <div className="flex items-center gap-4">
           {profile?.userName && (
-            <span className="text-sm text-gray-400">
+            <span className="text-sm text-sf-muted">
               Hi, <span className="text-white">{profile.userName}</span>
             </span>
           )}
           <button
             onClick={goToSettings}
-            className="p-2 text-gray-400 hover:text-white transition-colors"
+            className="p-2 text-sf-muted hover:text-white transition-colors"
             title="Settings"
           >
             <Settings className="w-5 h-5" />
@@ -608,8 +608,8 @@ export default function App() {
   // Show loading while checking for profile
   if (profileLoading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
+      <div className="min-h-screen bg-sf-dark flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-sf-green/30 border-t-sf-green rounded-full animate-spin" />
       </div>
     );
   }
@@ -617,18 +617,18 @@ export default function App() {
   // Profile Setup Screen
   if (appScreen === 'setup') {
     return (
-      <div className="min-h-screen bg-gray-950">
+      <div className="min-h-screen bg-sf-dark">
         <Header />
         <div className="flex items-center justify-center p-6 min-h-[calc(100vh-73px)]">
           <div className="w-full max-w-md">
-            <div className="bg-gray-900 rounded-2xl border border-gray-800 p-8">
+            <div className="bg-sf-card rounded-2xl border border-sf-border p-8">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
-                  <Building2 className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 bg-sf-green rounded-xl flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-sf-dark" />
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-white">Set Up Your Profile</h1>
-                  <p className="text-sm text-gray-400">Let's personalize your coaching</p>
+                  <p className="text-sm text-sf-muted">Let's personalize your coaching</p>
                 </div>
               </div>
 
@@ -638,13 +638,13 @@ export default function App() {
                     Your Name <span className="text-red-400">*</span>
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-sf-muted-dark" />
                     <input
                       type="text"
                       value={setupUserName}
                       onChange={(e) => setSetupUserName(e.target.value)}
                       placeholder="Enter your name"
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="w-full bg-sf-input border border-sf-border-light rounded-lg py-3 pl-10 pr-4 text-gray-100 placeholder-sf-muted-dark focus:outline-none focus:ring-2 focus:ring-sf-green focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -654,13 +654,13 @@ export default function App() {
                     Company Name <span className="text-red-400">*</span>
                   </label>
                   <div className="relative">
-                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-sf-muted-dark" />
                     <input
                       type="text"
                       value={setupCompanyName}
                       onChange={(e) => setSetupCompanyName(e.target.value)}
                       placeholder="Enter your company name"
-                      className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="w-full bg-sf-input border border-sf-border-light rounded-lg py-3 pl-10 pr-4 text-gray-100 placeholder-sf-muted-dark focus:outline-none focus:ring-2 focus:ring-sf-green focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -675,7 +675,7 @@ export default function App() {
                 <button
                   onClick={handleContinueSetup}
                   disabled={!setupUserName.trim() || !setupCompanyName.trim()}
-                  className="w-full py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-sf-green text-sf-dark font-semibold rounded-lg hover:bg-sf-green-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   Continue
                   <ArrowRight className="w-5 h-5" />
@@ -691,18 +691,18 @@ export default function App() {
   // Coaching Style Selection Screen
   if (appScreen === 'style') {
     return (
-      <div className="min-h-screen bg-gray-950">
+      <div className="min-h-screen bg-sf-dark">
         <Header />
         <div className="flex items-center justify-center p-6 min-h-[calc(100vh-73px)]">
           <div className="w-full max-w-md">
-            <div className="bg-gray-900 rounded-2xl border border-gray-800 p-8">
+            <div className="bg-sf-card rounded-2xl border border-sf-border p-8">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
-                  <MessageSquare className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 bg-sf-green rounded-xl flex items-center justify-center">
+                  <MessageSquare className="w-6 h-6 text-sf-dark" />
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-white">Choose Your Coaching Style</h1>
-                  <p className="text-sm text-gray-400">How do you like feedback?</p>
+                  <p className="text-sm text-sf-muted">How do you like feedback?</p>
                 </div>
               </div>
 
@@ -711,21 +711,21 @@ export default function App() {
                   onClick={() => setFeedbackStyle('supportive')}
                   className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
                     feedbackStyle === 'supportive'
-                      ? 'border-orange-500 bg-orange-500/10'
-                      : 'border-gray-700 bg-gray-800 hover:border-gray-600'
+                      ? 'border-sf-green bg-sf-green/10'
+                      : 'border-sf-border-light bg-sf-input hover:border-sf-muted'
                   }`}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      feedbackStyle === 'supportive' ? 'border-orange-500' : 'border-gray-600'
+                      feedbackStyle === 'supportive' ? 'border-sf-green' : 'border-sf-muted'
                     }`}>
                       {feedbackStyle === 'supportive' && (
-                        <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-sf-green" />
                       )}
                     </div>
                     <span className="font-semibold text-white">Supportive</span>
                   </div>
-                  <p className="text-sm text-gray-400 ml-8">
+                  <p className="text-sm text-sf-muted ml-8">
                     Encouraging tone, celebrates wins, gentle nudges
                   </p>
                 </button>
@@ -734,33 +734,33 @@ export default function App() {
                   onClick={() => setFeedbackStyle('direct')}
                   className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
                     feedbackStyle === 'direct'
-                      ? 'border-orange-500 bg-orange-500/10'
-                      : 'border-gray-700 bg-gray-800 hover:border-gray-600'
+                      ? 'border-sf-green bg-sf-green/10'
+                      : 'border-sf-border-light bg-sf-input hover:border-sf-muted'
                   }`}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      feedbackStyle === 'direct' ? 'border-orange-500' : 'border-gray-600'
+                      feedbackStyle === 'direct' ? 'border-sf-green' : 'border-sf-muted'
                     }`}>
                       {feedbackStyle === 'direct' && (
-                        <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-sf-green" />
                       )}
                     </div>
                     <span className="font-semibold text-white">Direct</span>
                   </div>
-                  <p className="text-sm text-gray-400 ml-8">
+                  <p className="text-sm text-sf-muted ml-8">
                     Straight to the point, no fluff, clear actions
                   </p>
                 </button>
               </div>
 
-              <p className="text-xs text-gray-500 text-center mb-4">
+              <p className="text-xs text-sf-muted-dark text-center mb-4">
                 (You can change this anytime in Settings)
               </p>
 
               <button
                 onClick={completeSetup}
-                className="w-full py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-red-700 transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 bg-sf-green text-sf-dark font-semibold rounded-lg hover:bg-sf-green-dark transition-all flex items-center justify-center gap-2"
               >
                 Start Analysing Demos
                 <ArrowRight className="w-5 h-5" />
@@ -775,18 +775,18 @@ export default function App() {
   // Settings Screen
   if (appScreen === 'settings') {
     return (
-      <div className="min-h-screen bg-gray-950">
+      <div className="min-h-screen bg-sf-dark">
         <Header />
         <div className="p-6 max-w-2xl mx-auto">
           <button
             onClick={goBack}
-            className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors"
+            className="flex items-center gap-2 text-sf-muted hover:text-white mb-6 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
 
-          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-8">
+          <div className="bg-sf-card rounded-2xl border border-sf-border p-8">
             <h1 className="text-2xl font-bold text-white mb-6">Settings</h1>
 
             <div className="space-y-6">
@@ -795,13 +795,13 @@ export default function App() {
                   Your Name
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-sf-muted-dark" />
                   <input
                     type="text"
                     value={settingsUserName}
                     onChange={(e) => setSettingsUserName(e.target.value)}
                     placeholder="Enter your name"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full bg-sf-input border border-sf-border-light rounded-lg py-3 pl-10 pr-4 text-gray-100 placeholder-sf-muted-dark focus:outline-none focus:ring-2 focus:ring-sf-green focus:border-transparent"
                   />
                 </div>
               </div>
@@ -811,13 +811,13 @@ export default function App() {
                   Company Name
                 </label>
                 <div className="relative">
-                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-sf-muted-dark" />
                   <input
                     type="text"
                     value={settingsCompanyName}
                     onChange={(e) => setSettingsCompanyName(e.target.value)}
                     placeholder="Enter your company name"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full bg-sf-input border border-sf-border-light rounded-lg py-3 pl-10 pr-4 text-gray-100 placeholder-sf-muted-dark focus:outline-none focus:ring-2 focus:ring-sf-green focus:border-transparent"
                   />
                 </div>
               </div>
@@ -831,21 +831,21 @@ export default function App() {
                     onClick={() => setSettingsFeedbackStyle('supportive')}
                     className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
                       settingsFeedbackStyle === 'supportive'
-                        ? 'border-orange-500 bg-orange-500/10'
-                        : 'border-gray-700 bg-gray-800 hover:border-gray-600'
+                        ? 'border-sf-green bg-sf-green/10'
+                        : 'border-sf-border-light bg-sf-input hover:border-sf-muted'
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        settingsFeedbackStyle === 'supportive' ? 'border-orange-500' : 'border-gray-600'
+                        settingsFeedbackStyle === 'supportive' ? 'border-sf-green' : 'border-sf-muted'
                       }`}>
                         {settingsFeedbackStyle === 'supportive' && (
-                          <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-sf-green" />
                         )}
                       </div>
                       <div>
                         <span className="font-semibold text-white">Supportive</span>
-                        <p className="text-sm text-gray-400">Encouraging tone, celebrates wins</p>
+                        <p className="text-sm text-sf-muted">Encouraging tone, celebrates wins</p>
                       </div>
                     </div>
                   </button>
@@ -854,21 +854,21 @@ export default function App() {
                     onClick={() => setSettingsFeedbackStyle('direct')}
                     className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
                       settingsFeedbackStyle === 'direct'
-                        ? 'border-orange-500 bg-orange-500/10'
-                        : 'border-gray-700 bg-gray-800 hover:border-gray-600'
+                        ? 'border-sf-green bg-sf-green/10'
+                        : 'border-sf-border-light bg-sf-input hover:border-sf-muted'
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        settingsFeedbackStyle === 'direct' ? 'border-orange-500' : 'border-gray-600'
+                        settingsFeedbackStyle === 'direct' ? 'border-sf-green' : 'border-sf-muted'
                       }`}>
                         {settingsFeedbackStyle === 'direct' && (
-                          <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-sf-green" />
                         )}
                       </div>
                       <div>
                         <span className="font-semibold text-white">Direct</span>
-                        <p className="text-sm text-gray-400">Straight to the point, clear actions</p>
+                        <p className="text-sm text-sf-muted">Straight to the point, clear actions</p>
                       </div>
                     </div>
                   </button>
@@ -884,7 +884,7 @@ export default function App() {
 
               <button
                 onClick={handleSaveSettings}
-                className="w-full py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-red-700 transition-all"
+                className="w-full py-3 bg-sf-green text-sf-dark font-semibold rounded-lg hover:bg-sf-green-dark transition-all"
               >
                 Save Changes
               </button>
@@ -897,28 +897,28 @@ export default function App() {
 
   // Main App
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 pb-24">
+    <div className="min-h-screen bg-sf-dark text-gray-100 pb-24">
       <Toast message={toast.message} isVisible={toast.isVisible} onClose={hideToast} />
 
       {/* HubSpot Export Modal */}
       {showHubSpotModal && results && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70" onClick={() => setShowHubSpotModal(false)} />
-          <div className="relative bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-lg max-h-[90vh] overflow-hidden">
-            <div className="p-6 border-b border-gray-800">
+          <div className="relative bg-sf-card rounded-2xl border border-sf-border w-full max-w-lg max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b border-sf-border">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-white">Copy for HubSpot</h2>
-                <button onClick={() => setShowHubSpotModal(false)} className="text-gray-400 hover:text-white">
+                <button onClick={() => setShowHubSpotModal(false)} className="text-sf-muted hover:text-white">
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
             <div className="p-6 max-h-80 overflow-y-auto">
-              <div className="bg-gray-800 rounded-lg p-4 mb-4 font-mono text-xs text-gray-300 whitespace-pre-wrap">
+              <div className="bg-sf-input rounded-lg p-4 mb-4 font-mono text-xs text-gray-300 whitespace-pre-wrap">
                 {generateHubSpotText()}
               </div>
               <div className="space-y-3">
-                <p className="text-sm font-medium text-gray-400">Include:</p>
+                <p className="text-sm font-medium text-sf-muted">Include:</p>
                 {[
                   { key: 'includeStrengths', label: 'Strengths' },
                   { key: 'includePriorities', label: 'Priorities' },
@@ -930,17 +930,17 @@ export default function App() {
                       type="checkbox"
                       checked={hubSpotOptions[key as keyof HubSpotExportOptions]}
                       onChange={(e) => setHubSpotOptions(prev => ({ ...prev, [key]: e.target.checked }))}
-                      className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-orange-500 focus:ring-orange-500"
+                      className="w-4 h-4 rounded border-sf-border-light bg-sf-input text-sf-green focus:ring-sf-green"
                     />
                     <span className="text-sm text-gray-300">{label}</span>
                   </label>
                 ))}
               </div>
             </div>
-            <div className="p-6 border-t border-gray-800">
+            <div className="p-6 border-t border-sf-border">
               <button
                 onClick={handleCopyForHubSpot}
-                className="w-full py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-red-700 transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 bg-sf-green text-sf-dark font-semibold rounded-lg hover:bg-sf-green-dark transition-all flex items-center justify-center gap-2"
               >
                 <Copy className="w-5 h-5" />
                 Copy to Clipboard
@@ -954,27 +954,27 @@ export default function App() {
       {showShareModal && results && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70" onClick={() => setShowShareModal(false)} />
-          <div className="relative bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-lg">
-            <div className="p-6 border-b border-gray-800">
+          <div className="relative bg-sf-card rounded-2xl border border-sf-border w-full max-w-lg">
+            <div className="p-6 border-b border-sf-border">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-white">Share This Analysis</h2>
-                <button onClick={() => setShowShareModal(false)} className="text-gray-400 hover:text-white">
+                <button onClick={() => setShowShareModal(false)} className="text-sf-muted hover:text-white">
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <p className="text-sm text-gray-400 mt-1">Email a summary to your manager</p>
+              <p className="text-sm text-sf-muted mt-1">Email a summary to your manager</p>
             </div>
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Manager's Email</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-sf-muted-dark" />
                   <input
                     type="email"
                     value={shareOptions.managerEmail}
                     onChange={(e) => setShareOptions(prev => ({ ...prev, managerEmail: e.target.value }))}
                     placeholder="manager@company.com"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full bg-sf-input border border-sf-border-light rounded-lg py-3 pl-10 pr-4 text-gray-100 placeholder-sf-muted-dark focus:outline-none focus:ring-2 focus:ring-sf-green focus:border-transparent"
                   />
                 </div>
               </div>
@@ -984,7 +984,7 @@ export default function App() {
                   value={shareOptions.note}
                   onChange={(e) => setShareOptions(prev => ({ ...prev, note: e.target.value }))}
                   placeholder="Would love feedback on my discovery approach..."
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none h-20"
+                  className="w-full bg-sf-input border border-sf-border-light rounded-lg p-3 text-gray-100 placeholder-sf-muted-dark focus:outline-none focus:ring-2 focus:ring-sf-green focus:border-transparent resize-none h-20"
                 />
               </div>
               <div className="space-y-3">
@@ -997,18 +997,18 @@ export default function App() {
                       type="checkbox"
                       checked={shareOptions[key as keyof ShareEmailOptions] as boolean}
                       onChange={(e) => setShareOptions(prev => ({ ...prev, [key]: e.target.checked }))}
-                      className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-orange-500 focus:ring-orange-500"
+                      className="w-4 h-4 rounded border-sf-border-light bg-sf-input text-sf-green focus:ring-sf-green"
                     />
                     <span className="text-sm text-gray-300">{label}</span>
                   </label>
                 ))}
               </div>
             </div>
-            <div className="p-6 border-t border-gray-800">
+            <div className="p-6 border-t border-sf-border">
               <button
                 onClick={handleShareWithManager}
                 disabled={!shareOptions.managerEmail}
-                className="w-full py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 bg-sf-green text-sf-dark font-semibold rounded-lg hover:bg-sf-green-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <Send className="w-5 h-5" />
                 Send Summary
@@ -1025,21 +1025,21 @@ export default function App() {
       {showHistoryPanel && (
         <div className="fixed inset-0 z-40 flex">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowHistoryPanel(false)} />
-          <div className="relative ml-auto w-96 bg-gray-900 border-l border-gray-800 h-full overflow-y-auto">
-            <div className="p-4 border-b border-gray-800">
+          <div className="relative ml-auto w-96 bg-sf-card border-l border-sf-border h-full overflow-y-auto">
+            <div className="p-4 border-b border-sf-border">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-orange-500" />
+                  <Calendar className="w-5 h-5 text-sf-green" />
                   <h3 className="font-semibold text-white">Your Demo History</h3>
                 </div>
-                <button onClick={() => setShowHistoryPanel(false)} className="text-gray-400 hover:text-white">
+                <button onClick={() => setShowHistoryPanel(false)} className="text-sf-muted hover:text-white">
                   <X className="w-5 h-5" />
                 </button>
               </div>
               {groupedHistory.thisWeek.length > 0 && (
-                <div className="bg-gray-800 rounded-lg p-3 mt-3">
+                <div className="bg-sf-input rounded-lg p-3 mt-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-400">Weekly Average:</span>
+                    <span className="text-sm text-sf-muted">Weekly Average:</span>
                     <div className="flex items-center gap-2">
                       <span className={`font-bold ${getScoreColor(weeklyStats.thisWeekAvg)}`}>
                         {weeklyStats.thisWeekAvg.toFixed(1)}
@@ -1052,10 +1052,10 @@ export default function App() {
                     </div>
                   </div>
                   {weeklyStats.recurringThemes.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-gray-700">
+                    <div className="mt-2 pt-2 border-t border-sf-border-light">
                       <div className="flex items-center gap-1 mb-1">
-                        <Target className="w-3 h-3 text-orange-500" />
-                        <span className="text-xs text-gray-400">Recurring Theme:</span>
+                        <Target className="w-3 h-3 text-sf-green" />
+                        <span className="text-xs text-sf-muted">Recurring Theme:</span>
                       </div>
                       <p className="text-xs text-gray-300">
                         "{weeklyStats.recurringThemes[0].name}" flagged in {weeklyStats.recurringThemes[0].count}/{groupedHistory.thisWeek.length} demos
@@ -1067,24 +1067,24 @@ export default function App() {
             </div>
             <div className="p-4 space-y-4">
               {history.length === 0 ? (
-                <p className="text-gray-500 text-sm text-center py-8">No previous analyses</p>
+                <p className="text-sf-muted-dark text-sm text-center py-8">No previous analyses</p>
               ) : (
                 <>
                   {groupedHistory.thisWeek.length > 0 && (
                     <div>
-                      <h4 className="text-xs font-medium text-gray-500 uppercase mb-2">This Week</h4>
+                      <h4 className="text-xs font-medium text-sf-muted-dark uppercase mb-2">This Week</h4>
                       <div className="space-y-2">
                         {groupedHistory.thisWeek.map((entry) => (
-                          <div key={entry.id} className="bg-gray-800 rounded-lg p-3 cursor-pointer hover:bg-gray-750 transition-colors group" onClick={() => loadHistoryEntry(entry)}>
+                          <div key={entry.id} className="bg-sf-input rounded-lg p-3 cursor-pointer hover:bg-sf-hover transition-colors group" onClick={() => loadHistoryEntry(entry)}>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
-                                <span className="text-xs text-gray-500 w-8">{getDayName(new Date(entry.date))}</span>
+                                <span className="text-xs text-sf-muted-dark w-8">{getDayName(new Date(entry.date))}</span>
                                 <span className="font-medium text-white">{entry.prospectName}</span>
                               </div>
                               <div className="flex items-center gap-2">
                                 <span className={`text-lg font-bold ${getScoreColor(entry.overallScore)}`}>{entry.overallScore.toFixed(1)}</span>
-                                <button onClick={(e) => { e.stopPropagation(); loadHistoryEntry(entry); }} className="text-gray-400 hover:text-white"><Eye className="w-4 h-4" /></button>
-                                <button onClick={(e) => { e.stopPropagation(); deleteEntry(entry.id); }} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-400 transition-all"><Trash2 className="w-4 h-4" /></button>
+                                <button onClick={(e) => { e.stopPropagation(); loadHistoryEntry(entry); }} className="text-sf-muted hover:text-white"><Eye className="w-4 h-4" /></button>
+                                <button onClick={(e) => { e.stopPropagation(); deleteEntry(entry.id); }} className="opacity-0 group-hover:opacity-100 text-sf-muted hover:text-red-400 transition-all"><Trash2 className="w-4 h-4" /></button>
                               </div>
                             </div>
                           </div>
@@ -1094,18 +1094,18 @@ export default function App() {
                   )}
                   {groupedHistory.lastWeek.length > 0 && (
                     <div>
-                      <h4 className="text-xs font-medium text-gray-500 uppercase mb-2">Last Week</h4>
+                      <h4 className="text-xs font-medium text-sf-muted-dark uppercase mb-2">Last Week</h4>
                       <div className="space-y-2">
                         {groupedHistory.lastWeek.map((entry) => (
-                          <div key={entry.id} className="bg-gray-800 rounded-lg p-3 cursor-pointer hover:bg-gray-750 transition-colors group" onClick={() => loadHistoryEntry(entry)}>
+                          <div key={entry.id} className="bg-sf-input rounded-lg p-3 cursor-pointer hover:bg-sf-hover transition-colors group" onClick={() => loadHistoryEntry(entry)}>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
-                                <span className="text-xs text-gray-500 w-8">{getDayName(new Date(entry.date))}</span>
+                                <span className="text-xs text-sf-muted-dark w-8">{getDayName(new Date(entry.date))}</span>
                                 <span className="font-medium text-white">{entry.prospectName}</span>
                               </div>
                               <div className="flex items-center gap-2">
                                 <span className={`text-lg font-bold ${getScoreColor(entry.overallScore)}`}>{entry.overallScore.toFixed(1)}</span>
-                                <button onClick={(e) => { e.stopPropagation(); deleteEntry(entry.id); }} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-400 transition-all"><Trash2 className="w-4 h-4" /></button>
+                                <button onClick={(e) => { e.stopPropagation(); deleteEntry(entry.id); }} className="opacity-0 group-hover:opacity-100 text-sf-muted hover:text-red-400 transition-all"><Trash2 className="w-4 h-4" /></button>
                               </div>
                             </div>
                           </div>
@@ -1115,18 +1115,18 @@ export default function App() {
                   )}
                   {groupedHistory.older.length > 0 && (
                     <div>
-                      <h4 className="text-xs font-medium text-gray-500 uppercase mb-2">Earlier</h4>
+                      <h4 className="text-xs font-medium text-sf-muted-dark uppercase mb-2">Earlier</h4>
                       <div className="space-y-2">
                         {groupedHistory.older.map((entry) => (
-                          <div key={entry.id} className="bg-gray-800 rounded-lg p-3 cursor-pointer hover:bg-gray-750 transition-colors group" onClick={() => loadHistoryEntry(entry)}>
+                          <div key={entry.id} className="bg-sf-input rounded-lg p-3 cursor-pointer hover:bg-sf-hover transition-colors group" onClick={() => loadHistoryEntry(entry)}>
                             <div className="flex items-center justify-between">
                               <div>
                                 <p className="font-medium text-white">{entry.prospectName}</p>
-                                <p className="text-xs text-gray-500">{new Date(entry.date).toLocaleDateString()}</p>
+                                <p className="text-xs text-sf-muted-dark">{new Date(entry.date).toLocaleDateString()}</p>
                               </div>
                               <div className="flex items-center gap-2">
                                 <span className={`text-lg font-bold ${getScoreColor(entry.overallScore)}`}>{entry.overallScore.toFixed(1)}</span>
-                                <button onClick={(e) => { e.stopPropagation(); deleteEntry(entry.id); }} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-400 transition-all"><Trash2 className="w-4 h-4" /></button>
+                                <button onClick={(e) => { e.stopPropagation(); deleteEntry(entry.id); }} className="opacity-0 group-hover:opacity-100 text-sf-muted hover:text-red-400 transition-all"><Trash2 className="w-4 h-4" /></button>
                               </div>
                             </div>
                           </div>
@@ -1139,33 +1139,33 @@ export default function App() {
                   )}
                 </>
               )}
-              <button onClick={() => { setShowHistoryPanel(false); setActiveTab('input'); }} className="w-full py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-red-700 transition-all">Analyse New Demo</button>
+              <button onClick={() => { setShowHistoryPanel(false); setActiveTab('input'); }} className="w-full py-3 bg-sf-green text-sf-dark font-semibold rounded-lg hover:bg-sf-green-dark transition-all">Analyse New Demo</button>
             </div>
           </div>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="border-b border-gray-800 px-6">
+      <div className="border-b border-sf-border px-6">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           <div className="flex gap-4">
-            <button onClick={() => setActiveTab('input')} className={`py-3 px-1 border-b-2 font-medium text-sm transition-all ${activeTab === 'input' ? 'border-orange-500 text-orange-500' : 'border-transparent text-gray-400 hover:text-white'}`}>Input</button>
-            <button onClick={() => setActiveTab('results')} disabled={!results} className={`py-3 px-1 border-b-2 font-medium text-sm transition-all ${activeTab === 'results' ? 'border-orange-500 text-orange-500' : 'border-transparent text-gray-400 hover:text-white disabled:opacity-50'}`}>Results</button>
+            <button onClick={() => setActiveTab('input')} className={`py-3 px-1 border-b-2 font-medium text-sm transition-all ${activeTab === 'input' ? 'border-sf-green text-sf-green' : 'border-transparent text-sf-muted hover:text-white'}`}>Input</button>
+            <button onClick={() => setActiveTab('results')} disabled={!results} className={`py-3 px-1 border-b-2 font-medium text-sm transition-all ${activeTab === 'results' ? 'border-sf-green text-sf-green' : 'border-transparent text-sf-muted hover:text-white disabled:opacity-50'}`}>Results</button>
           </div>
-          <button onClick={() => setShowHistoryPanel(!showHistoryPanel)} className="relative p-2 text-gray-400 hover:text-white transition-colors" title="History">
+          <button onClick={() => setShowHistoryPanel(!showHistoryPanel)} className="relative p-2 text-sf-muted hover:text-white transition-colors" title="History">
             <History className="w-5 h-5" />
-            {history.length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full text-xs flex items-center justify-center text-white">{history.length}</span>}
+            {history.length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-sf-green rounded-full text-xs flex items-center justify-center text-sf-dark font-bold">{history.length}</span>}
           </button>
         </div>
       </div>
 
       {/* Profile Context - Input Tab */}
       {activeTab === 'input' && profile && (
-        <div className="px-6 py-3 border-b border-gray-800">
+        <div className="px-6 py-3 border-b border-sf-border">
           <div className="max-w-6xl mx-auto">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-sf-muted">
               Analysing as <span className="text-white">{profile.userName}</span> from <span className="text-white">{profile.companyName}</span>
-              <button onClick={goToSettings} className="ml-2 text-orange-400 hover:text-orange-300 underline">Edit</button>
+              <button onClick={goToSettings} className="ml-2 text-sf-green hover:text-sf-green-dark underline">Edit</button>
             </p>
           </div>
         </div>
@@ -1183,41 +1183,41 @@ export default function App() {
         {activeTab === 'input' && (
           <div className="space-y-6">
             <div className="flex justify-end">
-              <button onClick={loadSampleData} className="text-sm text-orange-400 hover:text-orange-300 flex items-center gap-1">
+              <button onClick={loadSampleData} className="text-sm text-sf-green hover:text-sf-green-dark flex items-center gap-1">
                 <Info className="w-4 h-4" />
                 Try with sample demo
               </button>
             </div>
 
             {/* Demo Transcript */}
-            <div className={`bg-gray-900 rounded-xl border ${isDragOver ? 'border-orange-500 bg-orange-500/5' : 'border-gray-800'} p-6 transition-colors`} onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }} onDragLeave={() => setIsDragOver(false)} onDrop={handleDrop}>
+            <div className={`bg-sf-card rounded-xl border ${isDragOver ? 'border-sf-green bg-sf-green/5' : 'border-sf-border'} p-6 transition-colors`} onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }} onDragLeave={() => setIsDragOver(false)} onDrop={handleDrop}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center"><FileText className="w-4 h-4 text-orange-500" /></div>
+                  <div className="w-8 h-8 bg-sf-green/20 rounded-lg flex items-center justify-center"><FileText className="w-4 h-4 text-sf-green" /></div>
                   <div>
                     <h2 className="font-semibold text-white">Demo Transcript <span className="text-red-400">*</span></h2>
-                    <p className="text-sm text-gray-400">Required - paste or drag & drop</p>
+                    <p className="text-sm text-sf-muted">Required - paste or drag & drop</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-500"><Upload className="w-4 h-4" />.txt, .vtt, .srt</div>
+                <div className="flex items-center gap-2 text-xs text-sf-muted-dark"><Upload className="w-4 h-4" />.txt, .vtt, .srt</div>
               </div>
-              <textarea value={demoTranscript} onChange={(e) => setDemoTranscript(e.target.value)} placeholder={`Paste your demo transcript here...\n\nExample:\n00:03:13 Russell: Hello, how are you?`} className="w-full h-48 bg-gray-800 border border-gray-700 rounded-lg p-4 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none font-mono text-sm" />
+              <textarea value={demoTranscript} onChange={(e) => setDemoTranscript(e.target.value)} placeholder={`Paste your demo transcript here...\n\nExample:\n00:03:13 Russell: Hello, how are you?`} className="w-full h-48 bg-sf-input border border-sf-border-light rounded-lg p-4 text-gray-100 placeholder-sf-muted-dark focus:outline-none focus:ring-2 focus:ring-sf-green focus:border-transparent resize-none font-mono text-sm" />
               <div className="flex justify-between items-center mt-2">
-                <span className="text-xs text-gray-500">{demoTranscript.length > 0 ? `${demoTranscript.split('\n').length} lines` : 'No transcript loaded'}</span>
+                <span className="text-xs text-sf-muted-dark">{demoTranscript.length > 0 ? `${demoTranscript.split('\n').length} lines` : 'No transcript loaded'}</span>
               </div>
             </div>
 
             {/* Prospect URL */}
-            <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+            <div className="bg-sf-card rounded-xl border border-sf-border p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center"><Globe className="w-4 h-4 text-purple-500" /></div>
+                <div className="w-8 h-8 bg-sf-purple/20 rounded-lg flex items-center justify-center"><Globe className="w-4 h-4 text-sf-purple" /></div>
                 <div>
                   <h2 className="font-semibold text-white">Prospect Website <span className="text-red-400">*</span></h2>
-                  <p className="text-sm text-gray-400">Required - used to assess personalisation</p>
+                  <p className="text-sm text-sf-muted">Required - used to assess personalisation</p>
                 </div>
               </div>
               <div className="relative">
-                <input type="url" value={prospectUrl} onChange={(e) => setProspectUrl(e.target.value)} placeholder="https://www.prospect-website.com" className="w-full bg-gray-800 border border-gray-700 rounded-lg p-4 pr-10 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm" />
+                <input type="url" value={prospectUrl} onChange={(e) => setProspectUrl(e.target.value)} placeholder="https://www.prospect-website.com" className="w-full bg-sf-input border border-sf-border-light rounded-lg p-4 pr-10 text-gray-100 placeholder-sf-muted-dark focus:outline-none focus:ring-2 focus:ring-sf-purple focus:border-transparent text-sm" />
                 {prospectUrl && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
                     {isValidUrl(prospectUrl) ? <Check className="w-5 h-5 text-green-500" /> : <X className="w-5 h-5 text-red-500" />}
@@ -1227,61 +1227,61 @@ export default function App() {
             </div>
 
             {/* SDR Transcript */}
-            <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+            <div className="bg-sf-card rounded-xl border border-sf-border p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center"><MessageSquare className="w-4 h-4 text-blue-500" /></div>
                 <div>
                   <h2 className="font-semibold text-white">SDR Discovery Call</h2>
-                  <p className="text-sm text-gray-400">Optional - helps assess discovery continuation</p>
+                  <p className="text-sm text-sf-muted">Optional - helps assess discovery continuation</p>
                 </div>
               </div>
-              <textarea value={sdrTranscript} onChange={(e) => setSdrTranscript(e.target.value)} placeholder="Paste the SDR's initial call transcript here (optional)..." className="w-full h-32 bg-gray-800 border border-gray-700 rounded-lg p-4 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none font-mono text-sm" />
+              <textarea value={sdrTranscript} onChange={(e) => setSdrTranscript(e.target.value)} placeholder="Paste the SDR's initial call transcript here (optional)..." className="w-full h-32 bg-sf-input border border-sf-border-light rounded-lg p-4 text-gray-100 placeholder-sf-muted-dark focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none font-mono text-sm" />
             </div>
 
             {/* Analyze Button */}
-            <button onClick={handleAnalyze} disabled={!demoTranscript.trim() || !prospectUrl.trim() || isAnalyzing} className="w-full py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <button onClick={handleAnalyze} disabled={!demoTranscript.trim() || !prospectUrl.trim() || isAnalyzing} className="w-full py-4 bg-sf-green text-sf-dark font-semibold rounded-xl hover:bg-sf-green-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
               {isAnalyzing ? (
                 <div className="flex flex-col items-center gap-2">
-                  <div className="flex items-center gap-2"><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /><span>{LOADING_STAGES[loadingStage]}</span></div>
-                  <span className="text-xs text-white/70">Usually takes 30-60 seconds</span>
+                  <div className="flex items-center gap-2"><div className="w-5 h-5 border-2 border-sf-dark/30 border-t-sf-dark rounded-full animate-spin" /><span>{LOADING_STAGES[loadingStage]}</span></div>
+                  <span className="text-xs text-sf-dark/70">Usually takes 30-60 seconds</span>
                 </div>
               ) : (
                 <><Send className="w-5 h-5" />Analyze Demo</>
               )}
             </button>
-            {isAnalyzing && <button onClick={cancelAnalysis} className="w-full py-3 bg-gray-800 text-gray-300 font-medium rounded-xl hover:bg-gray-700 transition-all">Cancel</button>}
+            {isAnalyzing && <button onClick={cancelAnalysis} className="w-full py-3 bg-sf-input text-gray-300 font-medium rounded-xl hover:bg-sf-hover transition-all">Cancel</button>}
           </div>
         )}
 
         {activeTab === 'results' && results && (
           <div className="space-y-6">
             {/* Quick Win Summary */}
-            <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/30 rounded-xl p-6">
+            <div className="bg-gradient-to-r from-sf-green/10 to-sf-purple/10 border border-sf-green/30 rounded-xl p-6">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center flex-shrink-0"><Sparkles className="w-6 h-6 text-white" /></div>
+                <div className="w-12 h-12 bg-sf-green rounded-xl flex items-center justify-center flex-shrink-0"><Sparkles className="w-6 h-6 text-sf-dark" /></div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
                     <h2 className="text-lg font-semibold text-white">Quick Summary</h2>
-                    <div className={`text-3xl font-bold ${getScoreColor(results.overallScore)}`}>{results.overallScore.toFixed(1)}<span className="text-lg text-gray-500">/10</span></div>
+                    <div className={`text-3xl font-bold ${getScoreColor(results.overallScore)}`}>{results.overallScore.toFixed(1)}<span className="text-lg text-sf-muted-dark">/10</span></div>
                   </div>
                   <p className="text-gray-200 text-lg">{generateQuickWinSummary(results)}</p>
-                  <p className="text-xs text-gray-500 mt-2">Team average: {BENCHMARKS.teamAverage} | Top performers: {BENCHMARKS.topPerformers}+</p>
+                  <p className="text-xs text-sf-muted-dark mt-2">Team average: {BENCHMARKS.teamAverage} | Top performers: {BENCHMARKS.topPerformers}+</p>
                 </div>
               </div>
             </div>
 
             {/* 3 Priorities */}
-            <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+            <div className="bg-sf-card rounded-xl border border-sf-border p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Target className="w-5 h-5 text-orange-500" />
+                <Target className="w-5 h-5 text-sf-green" />
                 <h2 className="text-lg font-semibold text-white">Your 3 Priorities for Next Demo</h2>
               </div>
               <div className="space-y-4">
                 {getTop3Priorities(results).map((priority, idx) => (
-                  <div key={idx} className="bg-gray-800 rounded-lg p-4">
+                  <div key={idx} className="bg-sf-input rounded-lg p-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3 flex-1">
-                        <span className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">{idx + 1}</span>
+                        <span className="w-6 h-6 bg-sf-green rounded-full flex items-center justify-center text-sf-dark text-sm font-bold flex-shrink-0">{idx + 1}</span>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="font-medium text-white">{priority.category}</span>
@@ -1291,8 +1291,8 @@ export default function App() {
                         </div>
                       </div>
                       <div className="flex gap-1 flex-shrink-0">
-                        <button onClick={() => handleCopyTip(priority.tip)} className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors" title="Copy"><Copy className="w-4 h-4" /></button>
-                        <button onClick={() => handleAddToHubSpot(priority.category, priority.tip)} className="p-2 text-gray-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-lg transition-colors" title="Copy for HubSpot"><Link className="w-4 h-4" /></button>
+                        <button onClick={() => handleCopyTip(priority.tip)} className="p-2 text-sf-muted hover:text-white hover:bg-sf-hover rounded-lg transition-colors" title="Copy"><Copy className="w-4 h-4" /></button>
+                        <button onClick={() => handleAddToHubSpot(priority.category, priority.tip)} className="p-2 text-sf-muted hover:text-sf-green hover:bg-sf-green/10 rounded-lg transition-colors" title="Copy for HubSpot"><Link className="w-4 h-4" /></button>
                       </div>
                     </div>
                   </div>
@@ -1301,32 +1301,32 @@ export default function App() {
             </div>
 
             {/* Score Breakdown */}
-            <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
-              <button onClick={() => setShowScoreBreakdown(!showScoreBreakdown)} className="w-full p-4 flex items-center justify-between hover:bg-gray-800/50 transition-colors">
-                <div className="flex items-center gap-2"><BarChart3 className="w-5 h-5 text-gray-400" /><span className="font-medium text-white">See detailed scores</span></div>
-                {showScoreBreakdown ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+            <div className="bg-sf-card rounded-xl border border-sf-border overflow-hidden">
+              <button onClick={() => setShowScoreBreakdown(!showScoreBreakdown)} className="w-full p-4 flex items-center justify-between hover:bg-sf-input/50 transition-colors">
+                <div className="flex items-center gap-2"><BarChart3 className="w-5 h-5 text-sf-muted" /><span className="font-medium text-white">See detailed scores</span></div>
+                {showScoreBreakdown ? <ChevronUp className="w-5 h-5 text-sf-muted" /> : <ChevronDown className="w-5 h-5 text-sf-muted" />}
               </button>
               {showScoreBreakdown && (
-                <div className="p-6 pt-0 border-t border-gray-800">
+                <div className="p-6 pt-0 border-t border-sf-border">
                   <div className="grid grid-cols-7 gap-2 mt-4">
                     {results.categories.map((cat, idx) => (
                       <div key={idx} className="text-center">
-                        <div className="h-24 bg-gray-800 rounded-lg relative overflow-hidden">
+                        <div className="h-24 bg-sf-input rounded-lg relative overflow-hidden">
                           <div className={`absolute bottom-0 left-0 right-0 transition-all ${getScoreBarColor(cat.score)}`} style={{ height: `${cat.score * 10}%` }} />
                         </div>
-                        <p className="text-xs text-gray-400 mt-2 truncate" title={cat.name}>{cat.name.split(' ')[0]}</p>
+                        <p className="text-xs text-sf-muted mt-2 truncate" title={cat.name}>{cat.name.split(' ')[0]}</p>
                         <p className={`text-sm font-semibold ${getScoreColor(cat.score)}`}>{cat.score}</p>
                       </div>
                     ))}
                   </div>
                   <div className="grid grid-cols-2 gap-4 mt-6">
-                    <div className="bg-gray-800 rounded-lg p-4">
+                    <div className="bg-sf-input rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2"><CheckCircle className="w-4 h-4 text-green-500" /><h3 className="font-medium text-white text-sm">Key Strengths</h3></div>
                       <ul className="space-y-1">{results.keyStrengths.slice(0, 3).map((s, i) => <li key={i} className="text-xs text-gray-300 flex items-start gap-1"><span className="text-green-500">•</span>{s}</li>)}</ul>
                     </div>
-                    <div className="bg-gray-800 rounded-lg p-4">
-                      <div className="flex items-center gap-2 mb-2"><AlertTriangle className="w-4 h-4 text-orange-500" /><h3 className="font-medium text-white text-sm">Areas to Improve</h3></div>
-                      <ul className="space-y-1">{results.priorityImprovements.slice(0, 3).map((s, i) => <li key={i} className="text-xs text-gray-300 flex items-start gap-1"><span className="text-orange-500">{i + 1}.</span>{s}</li>)}</ul>
+                    <div className="bg-sf-input rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2"><AlertTriangle className="w-4 h-4 text-sf-green" /><h3 className="font-medium text-white text-sm">Areas to Improve</h3></div>
+                      <ul className="space-y-1">{results.priorityImprovements.slice(0, 3).map((s, i) => <li key={i} className="text-xs text-gray-300 flex items-start gap-1"><span className="text-sf-green">{i + 1}.</span>{s}</li>)}</ul>
                     </div>
                   </div>
                 </div>
@@ -1335,64 +1335,64 @@ export default function App() {
 
             {/* Detailed Analysis */}
             <div className="space-y-3">
-              <div className="sticky top-0 z-10 bg-gray-950 py-3 -mx-6 px-6">
+              <div className="sticky top-0 z-10 bg-sf-dark py-3 -mx-6 px-6">
                 <h3 className="text-lg font-semibold text-white mb-2">Detailed Analysis</h3>
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {results.categories.map((cat, idx) => (
-                    <button key={idx} onClick={() => scrollToCategory(idx)} className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${activeNavSection === idx ? 'bg-orange-500 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'}`}>{cat.name.split(' ')[0]}</button>
+                    <button key={idx} onClick={() => scrollToCategory(idx)} className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${activeNavSection === idx ? 'bg-sf-green text-sf-dark' : 'bg-sf-input text-sf-muted hover:text-white'}`}>{cat.name.split(' ')[0]}</button>
                   ))}
                 </div>
               </div>
               {results.categories.map((category, idx) => (
-                <div key={idx} ref={(el) => { categoryRefs.current[idx] = el; }} className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
-                  <button onClick={() => toggleSection(idx)} className="w-full p-4 flex items-center justify-between hover:bg-gray-800/50 transition-colors">
+                <div key={idx} ref={(el) => { categoryRefs.current[idx] = el; }} className="bg-sf-card rounded-xl border border-sf-border overflow-hidden">
+                  <button onClick={() => toggleSection(idx)} className="w-full p-4 flex items-center justify-between hover:bg-sf-input/50 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${getScoreBg(category.score)}`}><IconComponent name={getCategoryIcon(category.name)} /></div>
                       <div className="text-left">
                         <div className="flex items-center gap-2"><h4 className="font-medium text-white">{category.name}</h4><span className={`text-xs px-2 py-0.5 rounded-full ${getScoreLabel(category.score).color}`}>{getScoreLabel(category.score).text}</span></div>
-                        <p className="text-sm text-gray-400">{category.summary}</p>
+                        <p className="text-sm text-sf-muted">{category.summary}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <span className={`text-2xl font-bold ${getScoreColor(category.score)}`}>{category.score}/10</span>
-                      {expandedSections[idx] ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+                      {expandedSections[idx] ? <ChevronUp className="w-5 h-5 text-sf-muted" /> : <ChevronDown className="w-5 h-5 text-sf-muted" />}
                     </div>
                   </button>
                   {expandedSections[idx] && (
-                    <div className="px-4 pb-4 space-y-4 border-t border-gray-800 pt-4">
+                    <div className="px-4 pb-4 space-y-4 border-t border-sf-border pt-4">
                       {category.quotes && category.quotes.map((quote, qIdx) => {
                         const timestamp = parseTimestamp(quote.transcript);
                         return (
-                          <div key={qIdx} className="bg-gray-800 rounded-lg p-4">
+                          <div key={qIdx} className="bg-sf-input rounded-lg p-4">
                             <div className="flex gap-2 mb-2 items-center">
-                              <span className="text-xs font-medium text-gray-500 uppercase">From transcript:</span>
-                              {timestamp && <span className="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded font-mono">{timestamp}</span>}
+                              <span className="text-xs font-medium text-sf-muted-dark uppercase">From transcript:</span>
+                              {timestamp && <span className="text-xs bg-sf-border-light text-gray-300 px-2 py-0.5 rounded font-mono">{timestamp}</span>}
                             </div>
-                            <p className="text-sm text-gray-300 italic border-l-2 border-gray-600 pl-3 mb-3">"{quote.transcript}"</p>
-                            <div className="flex gap-2 mb-2"><span className="text-xs font-medium text-orange-500 uppercase">Coaching:</span></div>
+                            <p className="text-sm text-gray-300 italic border-l-2 border-sf-border-light pl-3 mb-3">"{quote.transcript}"</p>
+                            <div className="flex gap-2 mb-2"><span className="text-xs font-medium text-sf-green uppercase">Coaching:</span></div>
                             <p className="text-sm text-gray-200">{quote.feedback}</p>
                           </div>
                         );
                       })}
                       {category.objections && category.objections.length > 0 && (
                         <div className="space-y-3">
-                          <h5 className="text-sm font-medium text-gray-400 uppercase">Objections Identified</h5>
+                          <h5 className="text-sm font-medium text-sf-muted uppercase">Objections Identified</h5>
                           {category.objections.map((obj, oIdx) => (
-                            <div key={oIdx} className="bg-gray-800 rounded-lg p-4">
+                            <div key={oIdx} className="bg-sf-input rounded-lg p-4">
                               <div className="flex items-center justify-between mb-2">
                                 <span className="text-sm font-medium text-red-400"><AlertTriangle className="w-4 h-4 inline mr-1" />{obj.objection}</span>
                                 <span className={`text-sm font-bold ${getScoreColor(obj.score)}`}>{obj.score}/10</span>
                               </div>
-                              <p className="text-sm text-gray-400 mb-2"><span className="text-gray-500">Handling:</span> {obj.handling}</p>
+                              <p className="text-sm text-sf-muted mb-2"><span className="text-sf-muted-dark">Handling:</span> {obj.handling}</p>
                               <p className="text-sm text-gray-200">{obj.feedback}</p>
                             </div>
                           ))}
                         </div>
                       )}
                       {category.nextDemo && (
-                        <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4 relative">
-                          <button onClick={() => handleCopyTip(category.nextDemo)} className="absolute top-3 right-3 p-1.5 text-orange-400 hover:text-orange-300 hover:bg-orange-500/20 rounded transition-colors" title="Copy tip"><Copy className="w-4 h-4" /></button>
-                          <div className="flex items-center gap-2 mb-2"><Zap className="w-4 h-4 text-orange-500" /><span className="text-sm font-medium text-orange-500">Next Demo, Try This:</span></div>
+                        <div className="bg-sf-green/10 border border-sf-green/30 rounded-lg p-4 relative">
+                          <button onClick={() => handleCopyTip(category.nextDemo)} className="absolute top-3 right-3 p-1.5 text-sf-green hover:text-sf-green-dark hover:bg-sf-green/20 rounded transition-colors" title="Copy tip"><Copy className="w-4 h-4" /></button>
+                          <div className="flex items-center gap-2 mb-2"><Zap className="w-4 h-4 text-sf-green" /><span className="text-sm font-medium text-sf-green">Next Demo, Try This:</span></div>
                           <p className="text-sm text-gray-200 pr-8">{category.nextDemo}</p>
                         </div>
                       )}
@@ -1402,23 +1402,23 @@ export default function App() {
               ))}
             </div>
 
-            <button onClick={goToInput} className="w-full py-3 bg-gray-800 text-gray-300 font-medium rounded-xl hover:bg-gray-700 transition-all">← Analyze Another Demo</button>
+            <button onClick={goToInput} className="w-full py-3 bg-sf-input text-gray-300 font-medium rounded-xl hover:bg-sf-hover transition-all">← Analyze Another Demo</button>
           </div>
         )}
       </div>
 
       {/* Sticky Export Footer */}
       {activeTab === 'results' && results && (
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 p-4 z-30">
+        <div className="fixed bottom-0 left-0 right-0 bg-sf-card border-t border-sf-border p-4 z-30">
           <div className="max-w-6xl mx-auto flex items-center justify-between">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-sf-muted">
               Logged as <span className="text-white">{profile?.userName}</span>
-              <button onClick={goToSettings} className="ml-2 text-orange-400 hover:text-orange-300">Edit profile</button>
+              <button onClick={goToSettings} className="ml-2 text-sf-green hover:text-sf-green-dark">Edit profile</button>
             </p>
             <div className="flex items-center gap-3">
-              <button onClick={() => setShowHubSpotModal(true)} className="px-4 py-2.5 bg-gray-800 text-gray-200 font-medium rounded-lg hover:bg-gray-700 transition-all flex items-center gap-2"><Copy className="w-4 h-4" />Copy for HubSpot</button>
-              <button onClick={() => setShowShareModal(true)} className="px-4 py-2.5 bg-gray-800 text-gray-200 font-medium rounded-lg hover:bg-gray-700 transition-all flex items-center gap-2"><Share2 className="w-4 h-4" />Share with Manager</button>
-              <button onClick={handleDownloadPDF} className="px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-lg hover:from-orange-600 hover:to-red-700 transition-all flex items-center gap-2"><FileDown className="w-4 h-4" />Save PDF</button>
+              <button onClick={() => setShowHubSpotModal(true)} className="px-4 py-2.5 bg-sf-input text-gray-200 font-medium rounded-lg hover:bg-sf-hover transition-all flex items-center gap-2"><Copy className="w-4 h-4" />Copy for HubSpot</button>
+              <button onClick={() => setShowShareModal(true)} className="px-4 py-2.5 bg-sf-input text-gray-200 font-medium rounded-lg hover:bg-sf-hover transition-all flex items-center gap-2"><Share2 className="w-4 h-4" />Share with Manager</button>
+              <button onClick={handleDownloadPDF} className="px-4 py-2.5 bg-sf-green text-sf-dark font-medium rounded-lg hover:bg-sf-green-dark transition-all flex items-center gap-2"><FileDown className="w-4 h-4" />Save PDF</button>
             </div>
           </div>
         </div>
