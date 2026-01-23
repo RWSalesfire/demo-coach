@@ -15,13 +15,29 @@ import { SAMPLE_TRANSCRIPT, SAMPLE_PROSPECT_URL, SAMPLE_SDR_TRANSCRIPT, BENCHMAR
 import type { AnalysisResult, HubSpotExportOptions, ShareEmailOptions } from './types/analysis';
 
 type FeedbackStyle = 'direct' | 'supportive';
-type AppScreen = 'setup' | 'style' | 'main' | 'settings';
+type AppScreen = 'setup' | 'style' | 'main' | 'settings' | 'analyzing';
 
 const LOADING_STAGES = [
   'Reading transcript...',
   'Analyzing discovery quality...',
   'Evaluating demo structure...',
   'Generating coaching feedback...'
+];
+
+const WITTY_MESSAGES = [
+  "Counting how many times you said 'does that make sense?'...",
+  "Checking if you actually let them talk...",
+  "Measuring your 'um' to insight ratio...",
+  "Seeing if you remembered their name...",
+  "Analyzing your mute button timing...",
+  "Checking if you demoed features they asked for...",
+  "Calculating talk-to-listen ratio... (no judgment)",
+  "Looking for that perfect discovery question...",
+  "Evaluating your 'any questions?' technique...",
+  "Checking if you stuck the landing...",
+  "Reviewing your screen share confidence...",
+  "Hunting for those golden sound bites...",
+  "Almost done... preparing your coaching notes..."
 ];
 
 export default function App() {
@@ -31,6 +47,7 @@ export default function App() {
   const [feedbackStyle, setFeedbackStyle] = useState<FeedbackStyle>('direct');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [loadingStage, setLoadingStage] = useState(0);
+  const [wittyMessageIndex, setWittyMessageIndex] = useState(0);
   const [results, setResults] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Record<number, boolean>>({});
@@ -325,6 +342,7 @@ export default function App() {
     }
     setIsAnalyzing(false);
     setLoadingStage(0);
+    setAppScreen('main');
   };
 
   // Handle analysis
@@ -340,8 +358,10 @@ export default function App() {
 
     setIsAnalyzing(true);
     setLoadingStage(0);
+    setWittyMessageIndex(0);
     setError(null);
     setShowScoreBreakdown(false);
+    setAppScreen('analyzing');
     abortControllerRef.current = new AbortController();
 
     const stageInterval = setInterval(() => {
@@ -365,11 +385,13 @@ export default function App() {
       const historyId = addToHistory(result, prospectUrl, demoTranscript, sdrTranscript, feedbackStyle);
       setCurrentHistoryId(historyId);
 
+      setAppScreen('main');
       setActiveTab('results');
     } catch (err) {
       clearInterval(stageInterval);
       if ((err as Error).name !== 'AbortError') {
         setError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
+        setAppScreen('main');
       }
     } finally {
       setIsAnalyzing(false);
@@ -605,6 +627,71 @@ export default function App() {
     </div>
   );
 
+  // Analyzing Screen Component
+  const AnalyzingScreen = () => {
+    // Rotate witty messages every 3 seconds
+    useEffect(() => {
+      const messageInterval = setInterval(() => {
+        setWittyMessageIndex(prev => (prev + 1) % WITTY_MESSAGES.length);
+      }, 3000);
+      return () => clearInterval(messageInterval);
+    }, []);
+
+    // Calculate progress percentage based on loading stage
+    const progressPercent = Math.min(((loadingStage + 1) / LOADING_STAGES.length) * 85 + 10, 95);
+
+    return (
+      <div className="min-h-screen bg-sf-dark">
+        <Header />
+        <div className="flex flex-col items-center justify-center p-6 min-h-[calc(100vh-73px)]">
+          <div className="max-w-md w-full text-center">
+            {/* Pulsing Icon */}
+            <div className="mb-8">
+              <div className="w-24 h-24 mx-auto bg-sf-green/20 rounded-full flex items-center justify-center animate-pulse-scale">
+                <div className="w-16 h-16 bg-sf-green/30 rounded-full flex items-center justify-center">
+                  <Zap className="w-10 h-10 text-sf-green" />
+                </div>
+              </div>
+            </div>
+
+            {/* Witty Message */}
+            <div className="h-16 flex items-center justify-center mb-8">
+              <p className="text-xl text-white font-medium transition-opacity duration-500">
+                {WITTY_MESSAGES[wittyMessageIndex]}
+              </p>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mb-6">
+              <div className="h-3 bg-sf-input rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-sf-green to-sf-green-dark rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
+                  style={{ width: `${progressPercent}%` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                </div>
+              </div>
+              <p className="text-sf-muted text-sm mt-2">{Math.round(progressPercent)}% complete</p>
+            </div>
+
+            {/* Stage Indicator */}
+            <p className="text-sf-muted-dark text-sm mb-8">
+              {LOADING_STAGES[loadingStage]}
+            </p>
+
+            {/* Cancel Button */}
+            <button
+              onClick={cancelAnalysis}
+              className="px-6 py-3 bg-sf-input text-sf-muted font-medium rounded-xl hover:bg-sf-hover hover:text-white transition-all"
+            >
+              Cancel Analysis
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Show loading while checking for profile
   if (profileLoading) {
     return (
@@ -612,6 +699,11 @@ export default function App() {
         <div className="w-8 h-8 border-2 border-sf-green/30 border-t-sf-green rounded-full animate-spin" />
       </div>
     );
+  }
+
+  // Analyzing Screen
+  if (appScreen === 'analyzing') {
+    return <AnalyzingScreen />;
   }
 
   // Profile Setup Screen
