@@ -4,18 +4,20 @@ import {
   CheckCircle, Target, TrendingUp, Users, Clock, Zap, BarChart3, Send,
   Copy, Link, History, Trash2, X, Upload, Check, Info,
   Share2, FileDown, Sparkles, Mail, Building2, ArrowRight,
-  Calendar, Eye, Settings, ArrowLeft, User
+  Calendar, Eye, Settings, ArrowLeft, User, Phone, Video
 } from 'lucide-react';
-import { analyzeDemo } from './services/claudeApi';
+import { analyzeDemo, analyzeCall } from './services/claudeApi';
 import { Toast, useToast } from './components/Toast';
 import { useAnalysisHistory, type HistoryEntry } from './hooks/useAnalysisHistory';
+import { useCallHistory, type CallHistoryEntry } from './hooks/useCallHistory';
 import { useCompanyProfile } from './hooks/useCompanyProfile';
 import { copyToClipboard, downloadPDF, generateShareableLink } from './utils/export';
 import { SAMPLE_TRANSCRIPT, SAMPLE_PROSPECT_URL, SAMPLE_SDR_TRANSCRIPT, BENCHMARKS } from './constants/sampleData';
 import type { AnalysisResult, HubSpotExportOptions, ShareEmailOptions } from './types/analysis';
 
 type FeedbackStyle = 'direct' | 'supportive';
-type AppScreen = 'setup' | 'style' | 'main' | 'settings' | 'analyzing';
+type CoachType = 'demo' | 'call';
+type AppScreen = 'setup' | 'style' | 'coachSelect' | 'main' | 'settings' | 'analyzing';
 
 const LOADING_STAGES = [
   'Reading transcript...',
@@ -24,7 +26,7 @@ const LOADING_STAGES = [
   'Generating coaching feedback...'
 ];
 
-const WITTY_MESSAGES = [
+const DEMO_WITTY_MESSAGES = [
   "Counting how many times you said 'does that make sense?'...",
   "Checking if you actually let them talk...",
   "Measuring your 'um' to insight ratio...",
@@ -37,6 +39,20 @@ const WITTY_MESSAGES = [
   "Checking if you stuck the landing...",
   "Reviewing your screen share confidence...",
   "Hunting for those golden sound bites...",
+  "Almost done... preparing your coaching notes..."
+];
+
+const CALL_WITTY_MESSAGES = [
+  "Checking if you asked for permission to continue...",
+  "Counting your 'does that make sense?' moments...",
+  "Analyzing your gatekeeper charm...",
+  "Measuring your talk-to-listen ratio...",
+  "Reviewing your objection comebacks...",
+  "Checking if you got past 'send me an email'...",
+  "Evaluating your opener confidence...",
+  "Looking for that killer discovery question...",
+  "Checking if you stuck the landing...",
+  "Scoring your close attempt...",
   "Almost done... preparing your coaching notes..."
 ];
 
@@ -61,6 +77,13 @@ export default function App() {
   // Screen and navigation state
   const [appScreen, setAppScreen] = useState<AppScreen>('main');
   const [previousScreen, setPreviousScreen] = useState<AppScreen>('main');
+  const [activeCoach, setActiveCoach] = useState<CoachType>('demo');
+
+  // Call Coach state
+  const [callTranscript, setCallTranscript] = useState('');
+  const [callResults, setCallResults] = useState<AnalysisResult | null>(null);
+  const [currentCallHistoryId, setCurrentCallHistoryId] = useState<string | null>(null);
+  void currentCallHistoryId; // TODO: Use in call history panel
 
   // Setup form state
   const [setupUserName, setSetupUserName] = useState('');
@@ -92,6 +115,8 @@ export default function App() {
 
   const { toast, showToast, hideToast } = useToast();
   const { history, addToHistory, clearHistory, deleteEntry } = useAnalysisHistory();
+  const { history: callHistory, addToHistory: addCallToHistory, clearHistory: clearCallHistory, deleteEntry: deleteCallEntry } = useCallHistory();
+  void clearCallHistory; void deleteCallEntry; // TODO: Use in call history panel
   const { profile, saveProfile, hasProfile, isLoading: profileLoading } = useCompanyProfile();
 
   // Check if first time user
@@ -110,6 +135,11 @@ export default function App() {
 
   // Navigation functions
   const goToInput = () => {
+    setAppScreen('coachSelect');
+  };
+
+  const goToCoach = (coach: CoachType) => {
+    setActiveCoach(coach);
     setAppScreen('main');
     setActiveTab('input');
   };
@@ -176,12 +206,12 @@ export default function App() {
     setAppScreen('style');
   };
 
-  // Complete setup and go to main app
+  // Complete setup and go to coach selector
   const completeSetup = () => {
     if (profile) {
       saveProfile({ ...profile, feedbackStyle });
     }
-    setAppScreen('main');
+    setAppScreen('coachSelect');
   };
 
   // Save settings
@@ -305,6 +335,12 @@ export default function App() {
     return { thisWeekAvg, lastWeekAvg, trend, recurringThemes };
   }, [groupedHistory]);
 
+  // Computed properties for active coach
+  const currentResults = activeCoach === 'demo' ? results : callResults;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const currentHistory = activeCoach === 'demo' ? history : callHistory;
+  void currentHistory; // TODO: Use in history panel
+
   const toggleSection = (section: number) => {
     setExpandedSections(prev => ({
       ...prev,
@@ -411,6 +447,67 @@ export default function App() {
     setShowHistoryPanel(false);
     setShowScoreBreakdown(false);
   };
+
+  // Handle call analysis
+  const handleAnalyzeCall = async () => {
+    if (!callTranscript.trim()) {
+      setError('Please paste your call transcript');
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setLoadingStage(0);
+    setWittyMessageIndex(0);
+    setError(null);
+    setShowScoreBreakdown(false);
+    setAppScreen('analyzing');
+    abortControllerRef.current = new AbortController();
+
+    const stageInterval = setInterval(() => {
+      setLoadingStage(prev => {
+        if (prev < LOADING_STAGES.length - 1) return prev + 1;
+        return prev;
+      });
+    }, 8000);
+
+    try {
+      const result = await analyzeCall({
+        callTranscript,
+        feedbackStyle
+      });
+
+      clearInterval(stageInterval);
+      setCallResults(result);
+
+      const historyId = addCallToHistory(result, callTranscript, feedbackStyle);
+      setCurrentCallHistoryId(historyId);
+
+      setAppScreen('main');
+      setActiveTab('results');
+    } catch (err) {
+      clearInterval(stageInterval);
+      if ((err as Error).name !== 'AbortError') {
+        setError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
+        setAppScreen('main');
+      }
+    } finally {
+      setIsAnalyzing(false);
+      setLoadingStage(0);
+    }
+  };
+
+  // Load call history entry
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const loadCallHistoryEntry = (entry: CallHistoryEntry) => {
+    setCallResults(entry.results);
+    setCallTranscript(entry.callTranscript);
+    setFeedbackStyle(entry.feedbackStyle);
+    setCurrentCallHistoryId(entry.id);
+    setActiveTab('results');
+    setShowHistoryPanel(false);
+    setShowScoreBreakdown(false);
+  };
+  void loadCallHistoryEntry; // TODO: Use in call history panel
 
   // Generate HubSpot formatted text
   const generateHubSpotText = () => {
@@ -605,9 +702,15 @@ export default function App() {
           className="flex items-center gap-3 hover:opacity-80 transition-opacity"
         >
           <div className="w-10 h-10 bg-sf-green rounded-lg flex items-center justify-center">
-            <Zap className="w-6 h-6 text-sf-dark" />
+            {activeCoach === 'demo' ? (
+              <Video className="w-6 h-6 text-sf-dark" />
+            ) : (
+              <Phone className="w-6 h-6 text-sf-dark" />
+            )}
           </div>
-          <span className="text-xl font-bold text-white">Demo Coach</span>
+          <span className="text-xl font-bold text-white">
+            {activeCoach === 'demo' ? 'Demo Coach' : 'Call Coach'}
+          </span>
         </button>
         <div className="flex items-center gap-4">
           {profile?.userName && (
@@ -629,13 +732,15 @@ export default function App() {
 
   // Analyzing Screen Component
   const AnalyzingScreen = () => {
+    const wittyMessages = activeCoach === 'demo' ? DEMO_WITTY_MESSAGES : CALL_WITTY_MESSAGES;
+
     // Rotate witty messages every 3 seconds
     useEffect(() => {
       const messageInterval = setInterval(() => {
-        setWittyMessageIndex(prev => (prev + 1) % WITTY_MESSAGES.length);
+        setWittyMessageIndex(prev => (prev + 1) % wittyMessages.length);
       }, 3000);
       return () => clearInterval(messageInterval);
-    }, []);
+    }, [wittyMessages.length]);
 
     // Calculate progress percentage based on loading stage
     const progressPercent = Math.min(((loadingStage + 1) / LOADING_STAGES.length) * 85 + 10, 95);
@@ -649,7 +754,11 @@ export default function App() {
             <div className="mb-8">
               <div className="w-24 h-24 mx-auto bg-sf-green/20 rounded-full flex items-center justify-center animate-pulse-scale">
                 <div className="w-16 h-16 bg-sf-green/30 rounded-full flex items-center justify-center">
-                  <Zap className="w-10 h-10 text-sf-green" />
+                  {activeCoach === 'demo' ? (
+                    <Video className="w-10 h-10 text-sf-green" />
+                  ) : (
+                    <Phone className="w-10 h-10 text-sf-green" />
+                  )}
                 </div>
               </div>
             </div>
@@ -657,7 +766,7 @@ export default function App() {
             {/* Witty Message */}
             <div className="h-16 flex items-center justify-center mb-8">
               <p className="text-xl text-white font-medium transition-opacity duration-500">
-                {WITTY_MESSAGES[wittyMessageIndex]}
+                {wittyMessages[wittyMessageIndex]}
               </p>
             </div>
 
@@ -704,6 +813,61 @@ export default function App() {
   // Analyzing Screen
   if (appScreen === 'analyzing') {
     return <AnalyzingScreen />;
+  }
+
+  // Coach Selector Screen
+  if (appScreen === 'coachSelect') {
+    return (
+      <div className="min-h-screen bg-sf-dark">
+        <Header />
+        <div className="flex items-center justify-center p-6 min-h-[calc(100vh-73px)]">
+          <div className="w-full max-w-2xl">
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold text-white mb-2">What are you reviewing?</h1>
+              <p className="text-sf-muted">Choose the type of call you want to analyze</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Demo Coach Card */}
+              <button
+                onClick={() => goToCoach('demo')}
+                className="bg-sf-card rounded-2xl border border-sf-border p-8 text-left hover:border-sf-green/50 transition-all group"
+              >
+                <div className="w-16 h-16 bg-sf-green/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-sf-green/30 transition-colors">
+                  <Video className="w-8 h-8 text-sf-green" />
+                </div>
+                <h2 className="text-xl font-bold text-white mb-2">Demo Coach</h2>
+                <p className="text-sf-muted text-sm mb-4">
+                  Analyze your product demos and get coaching on your presentation, discovery, and closing skills.
+                </p>
+                <div className="flex items-center gap-2 text-sf-green text-sm font-medium">
+                  <span>For BDMs</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </button>
+
+              {/* Call Coach Card */}
+              <button
+                onClick={() => goToCoach('call')}
+                className="bg-sf-card rounded-2xl border border-sf-border p-8 text-left hover:border-sf-green/50 transition-all group"
+              >
+                <div className="w-16 h-16 bg-sf-green/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-sf-green/30 transition-colors">
+                  <Phone className="w-8 h-8 text-sf-green" />
+                </div>
+                <h2 className="text-xl font-bold text-white mb-2">Call Coach</h2>
+                <p className="text-sf-muted text-sm mb-4">
+                  Analyze your cold calls and get coaching on your opener, discovery, objection handling, and close.
+                </p>
+                <div className="flex items-center gap-2 text-sf-green text-sm font-medium">
+                  <span>For SDRs</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Profile Setup Screen
@@ -1122,7 +1286,7 @@ export default function App() {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-sf-green" />
-                  <h3 className="font-semibold text-white">Your Demo History</h3>
+                  <h3 className="font-semibold text-white">Your {activeCoach === 'demo' ? 'Demo' : 'Call'} History</h3>
                 </div>
                 <button onClick={() => setShowHistoryPanel(false)} className="text-sf-muted hover:text-white">
                   <X className="w-5 h-5" />
@@ -1272,7 +1436,7 @@ export default function App() {
           </div>
         )}
 
-        {activeTab === 'input' && (
+        {activeTab === 'input' && activeCoach === 'demo' && (
           <div className="space-y-6">
             <div className="flex justify-end">
               <button onClick={loadSampleData} className="text-sm text-sf-green hover:text-sf-green-dark flex items-center gap-1">
@@ -1345,7 +1509,66 @@ export default function App() {
           </div>
         )}
 
-        {activeTab === 'results' && results && (
+        {/* Call Coach Input */}
+        {activeTab === 'input' && activeCoach === 'call' && (
+          <div className="space-y-6">
+            {/* Call Transcript */}
+            <div className={`bg-sf-card rounded-xl border ${isDragOver ? 'border-sf-green bg-sf-green/5' : 'border-sf-border'} p-6 transition-colors`} onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }} onDragLeave={() => setIsDragOver(false)} onDrop={handleDrop}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-sf-green/20 rounded-lg flex items-center justify-center"><Phone className="w-4 h-4 text-sf-green" /></div>
+                  <div>
+                    <h2 className="font-semibold text-white">Call Transcript <span className="text-red-400">*</span></h2>
+                    <p className="text-sm text-sf-muted">Required - paste your cold call transcript</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-sf-muted-dark"><Upload className="w-4 h-4" />.txt, .vtt, .srt</div>
+              </div>
+              <textarea value={callTranscript} onChange={(e) => setCallTranscript(e.target.value)} placeholder={`Paste your cold call transcript here...\n\nExample:\n00:00:05 SDR: Hi, is this Sarah?\n00:00:07 Prospect: Yes, who's calling?`} className="w-full h-64 bg-sf-input border border-sf-border-light rounded-lg p-4 text-gray-100 placeholder-sf-muted-dark focus:outline-none focus:ring-2 focus:ring-sf-green focus:border-transparent resize-none font-mono text-sm" />
+              <div className="flex justify-between items-center mt-2">
+                <span className="text-xs text-sf-muted-dark">{callTranscript.length > 0 ? `${callTranscript.split('\n').length} lines` : 'No transcript loaded'}</span>
+              </div>
+            </div>
+
+            {/* Tips Card */}
+            <div className="bg-sf-card rounded-xl border border-sf-border p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-sf-purple/20 rounded-lg flex items-center justify-center"><Sparkles className="w-4 h-4 text-sf-purple" /></div>
+                <div>
+                  <h2 className="font-semibold text-white">What we'll analyze</h2>
+                  <p className="text-sm text-sf-muted">10 key areas of your cold call</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm text-sf-muted">
+                <div className="flex items-center gap-2"><CheckCircle className="w-3 h-3 text-sf-green" />Gatekeeper Handling</div>
+                <div className="flex items-center gap-2"><CheckCircle className="w-3 h-3 text-sf-green" />Permission-based Opener</div>
+                <div className="flex items-center gap-2"><CheckCircle className="w-3 h-3 text-sf-green" />Personalisation</div>
+                <div className="flex items-center gap-2"><CheckCircle className="w-3 h-3 text-sf-green" />Discovery Questions</div>
+                <div className="flex items-center gap-2"><CheckCircle className="w-3 h-3 text-sf-green" />Qualifying</div>
+                <div className="flex items-center gap-2"><CheckCircle className="w-3 h-3 text-sf-green" />Call Control</div>
+                <div className="flex items-center gap-2"><CheckCircle className="w-3 h-3 text-sf-green" />Tone & Energy</div>
+                <div className="flex items-center gap-2"><CheckCircle className="w-3 h-3 text-sf-green" />Value Proposition</div>
+                <div className="flex items-center gap-2"><CheckCircle className="w-3 h-3 text-sf-green" />Objection Handling</div>
+                <div className="flex items-center gap-2"><CheckCircle className="w-3 h-3 text-sf-green" />Close & Next Steps</div>
+              </div>
+            </div>
+
+            {/* Analyze Button */}
+            <button onClick={handleAnalyzeCall} disabled={!callTranscript.trim() || isAnalyzing} className="w-full py-4 bg-sf-green text-sf-dark font-semibold rounded-xl hover:bg-sf-green-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              {isAnalyzing ? (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex items-center gap-2"><div className="w-5 h-5 border-2 border-sf-dark/30 border-t-sf-dark rounded-full animate-spin" /><span>{LOADING_STAGES[loadingStage]}</span></div>
+                  <span className="text-xs text-sf-dark/70">Usually takes 30-60 seconds</span>
+                </div>
+              ) : (
+                <><Send className="w-5 h-5" />Analyze Call</>
+              )}
+            </button>
+            {isAnalyzing && <button onClick={cancelAnalysis} className="w-full py-3 bg-sf-input text-gray-300 font-medium rounded-xl hover:bg-sf-hover transition-all">Cancel</button>}
+          </div>
+        )}
+
+        {activeTab === 'results' && currentResults && (
           <div className="space-y-6">
             {/* Quick Win Summary */}
             <div className="bg-gradient-to-r from-sf-green/10 to-sf-purple/10 border border-sf-green/30 rounded-xl p-6">
@@ -1354,9 +1577,9 @@ export default function App() {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
                     <h2 className="text-lg font-semibold text-white">Quick Summary</h2>
-                    <div className={`text-3xl font-bold ${getScoreColor(results.overallScore)}`}>{results.overallScore.toFixed(1)}<span className="text-lg text-sf-muted-dark">/10</span></div>
+                    <div className={`text-3xl font-bold ${getScoreColor(currentResults.overallScore)}`}>{currentResults.overallScore.toFixed(1)}<span className="text-lg text-sf-muted-dark">/10</span></div>
                   </div>
-                  <p className="text-gray-200 text-lg">{generateQuickWinSummary(results)}</p>
+                  <p className="text-gray-200 text-lg">{generateQuickWinSummary(currentResults)}</p>
                   <p className="text-xs text-sf-muted-dark mt-2">Team average: {BENCHMARKS.teamAverage} | Top performers: {BENCHMARKS.topPerformers}+</p>
                 </div>
               </div>
@@ -1366,10 +1589,10 @@ export default function App() {
             <div className="bg-sf-card rounded-xl border border-sf-border p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Target className="w-5 h-5 text-sf-green" />
-                <h2 className="text-lg font-semibold text-white">Your 3 Priorities for Next Demo</h2>
+                <h2 className="text-lg font-semibold text-white">Your 3 Priorities for Next {activeCoach === 'demo' ? 'Demo' : 'Call'}</h2>
               </div>
               <div className="space-y-4">
-                {getTop3Priorities(results).map((priority, idx) => (
+                {getTop3Priorities(currentResults).map((priority, idx) => (
                   <div key={idx} className="bg-sf-input rounded-lg p-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3 flex-1">
@@ -1401,7 +1624,7 @@ export default function App() {
               {showScoreBreakdown && (
                 <div className="p-6 pt-0 border-t border-sf-border">
                   <div className="grid grid-cols-7 gap-2 mt-4">
-                    {results.categories.map((cat, idx) => (
+                    {currentResults.categories.map((cat, idx) => (
                       <div key={idx} className="text-center">
                         <div className="h-24 bg-sf-input rounded-lg relative overflow-hidden">
                           <div className={`absolute bottom-0 left-0 right-0 transition-all ${getScoreBarColor(cat.score)}`} style={{ height: `${cat.score * 10}%` }} />
@@ -1414,11 +1637,11 @@ export default function App() {
                   <div className="grid grid-cols-2 gap-4 mt-6">
                     <div className="bg-sf-input rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2"><CheckCircle className="w-4 h-4 text-green-500" /><h3 className="font-medium text-white text-sm">Key Strengths</h3></div>
-                      <ul className="space-y-1">{results.keyStrengths.slice(0, 3).map((s, i) => <li key={i} className="text-xs text-gray-300 flex items-start gap-1"><span className="text-green-500">•</span>{s}</li>)}</ul>
+                      <ul className="space-y-1">{currentResults.keyStrengths.slice(0, 3).map((s, i) => <li key={i} className="text-xs text-gray-300 flex items-start gap-1"><span className="text-green-500">•</span>{s}</li>)}</ul>
                     </div>
                     <div className="bg-sf-input rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2"><AlertTriangle className="w-4 h-4 text-sf-green" /><h3 className="font-medium text-white text-sm">Areas to Improve</h3></div>
-                      <ul className="space-y-1">{results.priorityImprovements.slice(0, 3).map((s, i) => <li key={i} className="text-xs text-gray-300 flex items-start gap-1"><span className="text-sf-green">{i + 1}.</span>{s}</li>)}</ul>
+                      <ul className="space-y-1">{currentResults.priorityImprovements.slice(0, 3).map((s, i) => <li key={i} className="text-xs text-gray-300 flex items-start gap-1"><span className="text-sf-green">{i + 1}.</span>{s}</li>)}</ul>
                     </div>
                   </div>
                 </div>
@@ -1430,12 +1653,12 @@ export default function App() {
               <div className="sticky top-0 z-10 bg-sf-dark py-3 -mx-6 px-6">
                 <h3 className="text-lg font-semibold text-white mb-2">Detailed Analysis</h3>
                 <div className="flex gap-2 overflow-x-auto pb-1">
-                  {results.categories.map((cat, idx) => (
+                  {currentResults.categories.map((cat, idx) => (
                     <button key={idx} onClick={() => scrollToCategory(idx)} className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${activeNavSection === idx ? 'bg-sf-green text-sf-dark' : 'bg-sf-input text-sf-muted hover:text-white'}`}>{cat.name.split(' ')[0]}</button>
                   ))}
                 </div>
               </div>
-              {results.categories.map((category, idx) => (
+              {currentResults.categories.map((category, idx) => (
                 <div key={idx} ref={(el) => { categoryRefs.current[idx] = el; }} className="bg-sf-card rounded-xl border border-sf-border overflow-hidden">
                   <button onClick={() => toggleSection(idx)} className="w-full p-4 flex items-center justify-between hover:bg-sf-input/50 transition-colors">
                     <div className="flex items-center gap-3">
@@ -1500,7 +1723,7 @@ export default function App() {
       </div>
 
       {/* Sticky Export Footer */}
-      {activeTab === 'results' && results && (
+      {activeTab === 'results' && currentResults && (
         <div className="fixed bottom-0 left-0 right-0 bg-sf-card border-t border-sf-border p-4 z-30">
           <div className="max-w-6xl mx-auto flex items-center justify-between">
             <p className="text-sm text-sf-muted">

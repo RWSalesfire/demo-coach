@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { buildSystemPrompt } from '../prompts/systemPrompt';
-import type { FormState } from '../types/form';
+import { buildCallCoachPrompt } from '../prompts/callCoachPrompt';
+import type { FormState, CallFormState } from '../types/form';
 import type { AnalysisResult } from '../types/analysis';
 
 function getClient(): Anthropic {
@@ -104,6 +105,48 @@ export async function analyzeDemo(formData: FormState): Promise<AnalysisResult> 
   const client = getClient();
   const systemPrompt = buildSystemPrompt();
   const userMessage = buildUserMessage(formData);
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 4096,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userMessage }],
+  });
+
+  // Extract text content from response
+  const textContent = response.content.find((c) => c.type === 'text');
+  if (!textContent || textContent.type !== 'text') {
+    throw new Error('No text response received from Claude');
+  }
+
+  return parseAnalysisResponse(textContent.text);
+}
+
+function buildCallUserMessage(formData: CallFormState): string {
+  const parts: string[] = [];
+
+  // Feedback style instructions
+  if (formData.feedbackStyle === 'direct') {
+    parts.push(`## FEEDBACK STYLE
+Be direct and specific. Point out exactly what went wrong and why. Use phrases like 'This opener was weak because...' or 'You lost the prospect here when...' while maintaining a coaching tone.`);
+  } else {
+    parts.push(`## FEEDBACK STYLE
+Be supportive and encouraging. Lead with what worked well before suggesting improvements. Use phrases like 'Great energy here, and you could strengthen it by...' or 'Good instinct - next time try...'`);
+  }
+
+  // Call transcript
+  parts.push(`\n## COLD CALL TRANSCRIPT TO ANALYSE
+${formData.callTranscript}
+
+Analyse this cold call and return the JSON response. Remember to be encouraging - every dial takes courage!`);
+
+  return parts.join('\n');
+}
+
+export async function analyzeCall(formData: CallFormState): Promise<AnalysisResult> {
+  const client = getClient();
+  const systemPrompt = buildCallCoachPrompt();
+  const userMessage = buildCallUserMessage(formData);
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
