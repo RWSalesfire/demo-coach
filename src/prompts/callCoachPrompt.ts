@@ -265,6 +265,17 @@ Nobody scores 10s across the board — even top performers have areas to improve
 
 ---
 
+## TRANSCRIPT CORRECTION
+For each quote you include, also provide a corrected version that fixes common speech-to-text errors:
+- Homophones (your/you're, there/their, hear/here)
+- Common STT mistakes (gonna → going to, wanna → want to)
+- Misrecognized proper nouns and technical terms
+- Punctuation and capitalization for clarity
+
+Include this as "correctedTranscript" alongside each quote. If the transcript is already correct, you can omit this field or set it to the same value.
+
+---
+
 ## RESPONSE FORMAT
 
 You MUST respond with valid JSON only. No markdown, no explanation outside the JSON.
@@ -289,6 +300,7 @@ You MUST respond with valid JSON only. No markdown, no explanation outside the J
       "quotes": [
         {
           "transcript": "Exact quote from the transcript",
+          "correctedTranscript": "Cleaned version with STT errors fixed",
           "feedback": "Specific coaching feedback on this moment"
         }
       ],
@@ -298,49 +310,49 @@ You MUST respond with valid JSON only. No markdown, no explanation outside the J
       "name": "Permission-based Opener",
       "score": 6,
       "summary": "...",
-      "quotes": [{"transcript": "...", "feedback": "..."}],
+      "quotes": [{"transcript": "...", "correctedTranscript": "...", "feedback": "..."}],
       "nextDemo": "..."
     },
     {
       "name": "Personalisation & Research",
       "score": 5,
       "summary": "...",
-      "quotes": [{"transcript": "...", "feedback": "..."}],
+      "quotes": [{"transcript": "...", "correctedTranscript": "...", "feedback": "..."}],
       "nextDemo": "..."
     },
     {
       "name": "Discovery & Questioning",
       "score": 7,
       "summary": "...",
-      "quotes": [{"transcript": "...", "feedback": "..."}],
+      "quotes": [{"transcript": "...", "correctedTranscript": "...", "feedback": "..."}],
       "nextDemo": "..."
     },
     {
       "name": "Qualifying Questions",
       "score": 6,
       "summary": "...",
-      "quotes": [{"transcript": "...", "feedback": "..."}],
+      "quotes": [{"transcript": "...", "correctedTranscript": "...", "feedback": "..."}],
       "nextDemo": "..."
     },
     {
       "name": "Call Control",
       "score": 7,
       "summary": "...",
-      "quotes": [{"transcript": "...", "feedback": "..."}],
+      "quotes": [{"transcript": "...", "correctedTranscript": "...", "feedback": "..."}],
       "nextDemo": "..."
     },
     {
       "name": "Tone & Energy",
       "score": 8,
       "summary": "...",
-      "quotes": [{"transcript": "...", "feedback": "..."}],
+      "quotes": [{"transcript": "...", "correctedTranscript": "...", "feedback": "..."}],
       "nextDemo": "..."
     },
     {
       "name": "Value Proposition & Relevance",
       "score": 6,
       "summary": "...",
-      "quotes": [{"transcript": "...", "feedback": "..."}],
+      "quotes": [{"transcript": "...", "correctedTranscript": "...", "feedback": "..."}],
       "nextDemo": "..."
     },
     {
@@ -362,7 +374,7 @@ You MUST respond with valid JSON only. No markdown, no explanation outside the J
       "name": "Close & Next Steps",
       "score": 5,
       "summary": "...",
-      "quotes": [{"transcript": "...", "feedback": "..."}],
+      "quotes": [{"transcript": "...", "correctedTranscript": "...", "feedback": "..."}],
       "nextDemo": "..."
     }
   ]

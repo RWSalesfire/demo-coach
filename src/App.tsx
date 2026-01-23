@@ -1683,7 +1683,12 @@ export default function App() {
                               <span className="text-xs font-medium text-sf-muted-dark uppercase">From transcript:</span>
                               {timestamp && <span className="text-xs bg-sf-border-light text-gray-300 px-2 py-0.5 rounded font-mono">{timestamp}</span>}
                             </div>
-                            <p className="text-sm text-gray-300 italic border-l-2 border-sf-border-light pl-3 mb-3">"{quote.transcript}"</p>
+                            <p className="text-sm text-gray-300 italic border-l-2 border-sf-border-light pl-3 mb-2">"{quote.transcript}"</p>
+                            {quote.correctedTranscript && quote.correctedTranscript !== quote.transcript && (
+                              <div className="text-xs text-sf-muted border-l-2 border-sf-green/30 pl-3 mb-3 py-1">
+                                <span className="text-sf-green">Likely said:</span> "{quote.correctedTranscript}"
+                              </div>
+                            )}
                             <div className="flex gap-2 mb-2"><span className="text-xs font-medium text-sf-green uppercase">Coaching:</span></div>
                             <p className="text-sm text-gray-200">{quote.feedback}</p>
                           </div>

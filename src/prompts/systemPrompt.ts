@@ -80,6 +80,15 @@ Good BDMs capture these metrics during discovery:
 - No POC success criteria defined
 - Weak close: "Let me know what you think" instead of booking specific next step
 
+## TRANSCRIPT CORRECTION
+For each quote you include, also provide a corrected version that fixes common speech-to-text errors:
+- Homophones (your/you're, there/their, hear/here)
+- Common STT mistakes (gonna → going to, wanna → want to)
+- Misrecognized proper nouns and technical terms
+- Punctuation and capitalization for clarity
+
+Include this as "correctedTranscript" alongside each quote. If the transcript is already correct, you can omit this field or set it to the same value.
+
 ## RESPONSE FORMAT
 You MUST respond with valid JSON only. No markdown, no explanation outside the JSON.
 
@@ -103,6 +112,7 @@ You MUST respond with valid JSON only. No markdown, no explanation outside the J
       "quotes": [
         {
           "transcript": "Exact quote from the transcript",
+          "correctedTranscript": "Cleaned version with STT errors fixed",
           "feedback": "Specific coaching feedback on this moment"
         }
       ],
@@ -112,21 +122,21 @@ You MUST respond with valid JSON only. No markdown, no explanation outside the J
       "name": "Demo Structure",
       "score": 8,
       "summary": "...",
-      "quotes": [{"transcript": "...", "feedback": "..."}],
+      "quotes": [{"transcript": "...", "correctedTranscript": "...", "feedback": "..."}],
       "nextDemo": "..."
     },
     {
       "name": "Personalisation",
       "score": 5,
       "summary": "...",
-      "quotes": [{"transcript": "...", "feedback": "..."}],
+      "quotes": [{"transcript": "...", "correctedTranscript": "...", "feedback": "..."}],
       "nextDemo": "..."
     },
     {
       "name": "ROI & Value Articulation",
       "score": 4,
       "summary": "...",
-      "quotes": [{"transcript": "...", "feedback": "..."}],
+      "quotes": [{"transcript": "...", "correctedTranscript": "...", "feedback": "..."}],
       "nextDemo": "..."
     },
     {
@@ -148,14 +158,14 @@ You MUST respond with valid JSON only. No markdown, no explanation outside the J
       "name": "Close Strength",
       "score": 7,
       "summary": "...",
-      "quotes": [{"transcript": "...", "feedback": "..."}],
+      "quotes": [{"transcript": "...", "correctedTranscript": "...", "feedback": "..."}],
       "nextDemo": "..."
     },
     {
       "name": "Engagement & Pacing",
       "score": 8,
       "summary": "...",
-      "quotes": [{"transcript": "...", "feedback": "..."}],
+      "quotes": [{"transcript": "...", "correctedTranscript": "...", "feedback": "..."}],
       "nextDemo": "..."
     }
   ]

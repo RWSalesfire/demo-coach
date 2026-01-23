@@ -1,5 +1,6 @@
 export interface Quote {
   transcript: string;
+  correctedTranscript?: string;
   feedback: string;
 }
 
