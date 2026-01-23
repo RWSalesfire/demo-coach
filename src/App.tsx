@@ -4,20 +4,24 @@ import {
   CheckCircle, Target, TrendingUp, Users, Clock, Zap, BarChart3, Send,
   Copy, Link, History, Trash2, X, Upload, Check, Info,
   Share2, FileDown, Sparkles, Mail, Building2, ArrowRight,
-  Calendar, Eye, Settings, ArrowLeft, User, Phone, Video
+  Calendar, Eye, Settings, ArrowLeft, User, Phone, Video, Mic
 } from 'lucide-react';
 import { analyzeDemo, analyzeCall } from './services/claudeApi';
 import { Toast, useToast } from './components/Toast';
 import { useAnalysisHistory, type HistoryEntry } from './hooks/useAnalysisHistory';
 import { useCallHistory, type CallHistoryEntry } from './hooks/useCallHistory';
+import { useRoleplayHistory } from './hooks/useRoleplayHistory';
+import { useRealtimeCall, formatTranscriptForScoring } from './hooks/useRealtimeCall';
 import { useCompanyProfile } from './hooks/useCompanyProfile';
 import { copyToClipboard, downloadPDF, generateShareableLink } from './utils/export';
 import { SAMPLE_TRANSCRIPT, SAMPLE_PROSPECT_URL, SAMPLE_SDR_TRANSCRIPT, BENCHMARKS } from './constants/sampleData';
+import { PersonaGrid, ActiveCallUI } from './components/roleplay';
 import type { AnalysisResult, HubSpotExportOptions, ShareEmailOptions } from './types/analysis';
+import type { ProspectPersona } from './types/roleplay';
 
 type FeedbackStyle = 'direct' | 'supportive';
-type CoachType = 'demo' | 'call';
-type AppScreen = 'setup' | 'style' | 'coachSelect' | 'main' | 'settings' | 'analyzing';
+type CoachType = 'demo' | 'call' | 'roleplay';
+type AppScreen = 'setup' | 'style' | 'coachSelect' | 'main' | 'settings' | 'analyzing' | 'personaSelect' | 'activeCall';
 
 const LOADING_STAGES = [
   'Reading transcript...',
@@ -56,6 +60,18 @@ const CALL_WITTY_MESSAGES = [
   "Almost done... preparing your coaching notes..."
 ];
 
+const ROLEPLAY_WITTY_MESSAGES = [
+  "Reviewing your opening hook...",
+  "Checking if you asked for permission...",
+  "Analyzing your discovery technique...",
+  "Measuring how well you listened...",
+  "Evaluating your objection handling...",
+  "Scoring your value prop delivery...",
+  "Checking if you earned the meeting...",
+  "Reviewing your call control...",
+  "Almost done... preparing your coaching notes..."
+];
+
 export default function App() {
   const [demoTranscript, setDemoTranscript] = useState('');
   const [sdrTranscript, setSdrTranscript] = useState('');
@@ -84,6 +100,14 @@ export default function App() {
   const [callResults, setCallResults] = useState<AnalysisResult | null>(null);
   const [currentCallHistoryId, setCurrentCallHistoryId] = useState<string | null>(null);
   void currentCallHistoryId; // TODO: Use in call history panel
+
+  // Roleplay Coach state
+  const [selectedPersona, setSelectedPersona] = useState<ProspectPersona | null>(null);
+  const [roleplayTranscript, setRoleplayTranscript] = useState('');
+  void roleplayTranscript; // TODO: Display in roleplay history
+  const [roleplayResults, setRoleplayResults] = useState<AnalysisResult | null>(null);
+  const [currentRoleplayHistoryId, setCurrentRoleplayHistoryId] = useState<string | null>(null);
+  void currentRoleplayHistoryId; // TODO: Use in roleplay history panel
 
   // Setup form state
   const [setupUserName, setSetupUserName] = useState('');
@@ -117,6 +141,9 @@ export default function App() {
   const { history, addToHistory, clearHistory, deleteEntry } = useAnalysisHistory();
   const { history: callHistory, addToHistory: addCallToHistory, clearHistory: clearCallHistory, deleteEntry: deleteCallEntry } = useCallHistory();
   void clearCallHistory; void deleteCallEntry; // TODO: Use in call history panel
+  const { addToHistory: addRoleplayToHistory, clearHistory: clearRoleplayHistory, deleteEntry: deleteRoleplayEntry } = useRoleplayHistory();
+  void clearRoleplayHistory; void deleteRoleplayEntry; // TODO: Use in roleplay history panel
+  const realtimeCall = useRealtimeCall();
   const { profile, saveProfile, hasProfile, isLoading: profileLoading } = useCompanyProfile();
 
   // Check if first time user
@@ -139,9 +166,65 @@ export default function App() {
   };
 
   const goToCoach = (coach: CoachType) => {
-    setActiveCoach(coach);
-    setAppScreen('main');
-    setActiveTab('input');
+    if (coach === 'roleplay') {
+      setActiveCoach('roleplay');
+      setAppScreen('personaSelect');
+    } else {
+      setActiveCoach(coach);
+      setAppScreen('main');
+      setActiveTab('input');
+    }
+  };
+
+  const goToPersonaSelect = () => {
+    setAppScreen('personaSelect');
+  };
+
+  const handleSelectPersona = (persona: ProspectPersona) => {
+    setSelectedPersona(persona);
+    setAppScreen('activeCall');
+    realtimeCall.startCall(persona);
+  };
+
+  const handleRoleplayCallEnd = async () => {
+    realtimeCall.endCall();
+
+    if (realtimeCall.transcript.length > 0 && selectedPersona) {
+      const formattedTranscript = formatTranscriptForScoring(realtimeCall.transcript);
+      setRoleplayTranscript(formattedTranscript);
+      setAppScreen('analyzing');
+      setIsAnalyzing(true);
+
+      try {
+        const result = await analyzeCall({
+          callTranscript: formattedTranscript,
+          feedbackStyle
+        });
+
+        setRoleplayResults(result);
+
+        const historyId = addRoleplayToHistory(
+          selectedPersona.id,
+          selectedPersona.name,
+          realtimeCall.callDuration,
+          result,
+          formattedTranscript,
+          feedbackStyle
+        );
+        setCurrentRoleplayHistoryId(historyId);
+
+        setActiveCoach('roleplay');
+        setAppScreen('main');
+        setActiveTab('results');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Analysis failed');
+        setAppScreen('personaSelect');
+      } finally {
+        setIsAnalyzing(false);
+      }
+    } else {
+      setAppScreen('personaSelect');
+    }
   };
 
   const goToSettings = () => {
@@ -336,7 +419,7 @@ export default function App() {
   }, [groupedHistory]);
 
   // Computed properties for active coach
-  const currentResults = activeCoach === 'demo' ? results : callResults;
+  const currentResults = activeCoach === 'demo' ? results : activeCoach === 'call' ? callResults : roleplayResults;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const currentHistory = activeCoach === 'demo' ? history : callHistory;
   void currentHistory; // TODO: Use in history panel
@@ -732,7 +815,7 @@ export default function App() {
 
   // Analyzing Screen Component
   const AnalyzingScreen = () => {
-    const wittyMessages = activeCoach === 'demo' ? DEMO_WITTY_MESSAGES : CALL_WITTY_MESSAGES;
+    const wittyMessages = activeCoach === 'demo' ? DEMO_WITTY_MESSAGES : activeCoach === 'call' ? CALL_WITTY_MESSAGES : ROLEPLAY_WITTY_MESSAGES;
 
     // Rotate witty messages every 3 seconds
     useEffect(() => {
@@ -821,24 +904,24 @@ export default function App() {
       <div className="min-h-screen bg-sf-dark">
         <Header />
         <div className="flex items-center justify-center p-6 min-h-[calc(100vh-73px)]">
-          <div className="w-full max-w-2xl">
+          <div className="w-full max-w-4xl">
             <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-white mb-2">What are you reviewing?</h1>
-              <p className="text-sf-muted">Choose the type of call you want to analyze</p>
+              <h1 className="text-2xl font-bold text-white mb-2">What would you like to do?</h1>
+              <p className="text-sf-muted">Choose how you want to practice or review</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Demo Coach Card */}
               <button
                 onClick={() => goToCoach('demo')}
-                className="bg-sf-card rounded-2xl border border-sf-border p-8 text-left hover:border-sf-green/50 transition-all group"
+                className="bg-sf-card rounded-2xl border border-sf-border p-6 text-left hover:border-sf-green/50 transition-all group"
               >
-                <div className="w-16 h-16 bg-sf-green/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-sf-green/30 transition-colors">
-                  <Video className="w-8 h-8 text-sf-green" />
+                <div className="w-14 h-14 bg-sf-green/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-sf-green/30 transition-colors">
+                  <Video className="w-7 h-7 text-sf-green" />
                 </div>
-                <h2 className="text-xl font-bold text-white mb-2">Demo Coach</h2>
+                <h2 className="text-lg font-bold text-white mb-2">Demo Coach</h2>
                 <p className="text-sf-muted text-sm mb-4">
-                  Analyze your product demos and get coaching on your presentation, discovery, and closing skills.
+                  Analyze your product demos and get coaching feedback.
                 </p>
                 <div className="flex items-center gap-2 text-sf-green text-sm font-medium">
                   <span>For BDMs</span>
@@ -849,17 +932,38 @@ export default function App() {
               {/* Call Coach Card */}
               <button
                 onClick={() => goToCoach('call')}
-                className="bg-sf-card rounded-2xl border border-sf-border p-8 text-left hover:border-sf-green/50 transition-all group"
+                className="bg-sf-card rounded-2xl border border-sf-border p-6 text-left hover:border-sf-green/50 transition-all group"
               >
-                <div className="w-16 h-16 bg-sf-green/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-sf-green/30 transition-colors">
-                  <Phone className="w-8 h-8 text-sf-green" />
+                <div className="w-14 h-14 bg-sf-green/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-sf-green/30 transition-colors">
+                  <Phone className="w-7 h-7 text-sf-green" />
                 </div>
-                <h2 className="text-xl font-bold text-white mb-2">Call Coach</h2>
+                <h2 className="text-lg font-bold text-white mb-2">Call Coach</h2>
                 <p className="text-sf-muted text-sm mb-4">
-                  Analyze your cold calls and get coaching on your opener, discovery, objection handling, and close.
+                  Analyze your cold calls and get coaching feedback.
                 </p>
                 <div className="flex items-center gap-2 text-sf-green text-sm font-medium">
                   <span>For SDRs</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </button>
+
+              {/* Roleplay Coach Card */}
+              <button
+                onClick={() => goToCoach('roleplay')}
+                className="bg-sf-card rounded-2xl border border-sf-border p-6 text-left hover:border-sf-green/50 transition-all group relative overflow-hidden"
+              >
+                <div className="absolute top-2 right-2 px-2 py-0.5 bg-sf-green/20 text-sf-green text-xs font-medium rounded-full">
+                  Live
+                </div>
+                <div className="w-14 h-14 bg-sf-green/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-sf-green/30 transition-colors">
+                  <Mic className="w-7 h-7 text-sf-green" />
+                </div>
+                <h2 className="text-lg font-bold text-white mb-2">Roleplay</h2>
+                <p className="text-sf-muted text-sm mb-4">
+                  Practice live calls with AI prospects and get scored.
+                </p>
+                <div className="flex items-center gap-2 text-sf-green text-sm font-medium">
+                  <span>Voice Practice</span>
                   <ArrowRight className="w-4 h-4" />
                 </div>
               </button>
@@ -867,6 +971,55 @@ export default function App() {
           </div>
         </div>
       </div>
+    );
+  }
+
+  // Persona Selection Screen
+  if (appScreen === 'personaSelect') {
+    return (
+      <div className="min-h-screen bg-sf-dark">
+        <Header />
+        <div className="p-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-4 mb-8">
+              <button
+                onClick={() => setAppScreen('coachSelect')}
+                className="flex items-center gap-2 text-sf-muted hover:text-white transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>Back</span>
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Choose Your Prospect</h1>
+                <p className="text-sf-muted">Select a persona to practice your cold call</p>
+              </div>
+            </div>
+
+            <PersonaGrid onSelectPersona={handleSelectPersona} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Active Call Screen
+  if (appScreen === 'activeCall' && selectedPersona) {
+    return (
+      <ActiveCallUI
+        persona={selectedPersona}
+        callState={realtimeCall.callState}
+        callDuration={realtimeCall.callDuration}
+        transcript={realtimeCall.transcript}
+        isAISpeaking={realtimeCall.isAISpeaking}
+        isUserSpeaking={realtimeCall.isUserSpeaking}
+        isMuted={realtimeCall.isMuted}
+        error={realtimeCall.error}
+        onMuteToggle={realtimeCall.toggleMute}
+        onEndCall={handleRoleplayCallEnd}
+        onBack={goToPersonaSelect}
+        userAnalyserNode={realtimeCall.userAnalyserNode}
+        aiAnalyserNode={realtimeCall.aiAnalyserNode}
+      />
     );
   }
 

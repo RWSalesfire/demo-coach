@@ -1,5 +1,5 @@
 export type FeedbackStyle = 'direct' | 'supportive';
-export type CoachType = 'demo' | 'call';
+export type CoachType = 'demo' | 'call' | 'roleplay';
 
 export interface FormState {
   demoTranscript: string;
